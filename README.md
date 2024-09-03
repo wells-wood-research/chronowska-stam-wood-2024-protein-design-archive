@@ -30,6 +30,22 @@ Jupyter notebook ```Extract_designed_chains_in_pdb_files.ipynb``` contains the c
 
 ## DE-STRESS
 
+The `de-stress-analysis/` folder contains all the code needed to produce the amino acid/secondary structure composition heatmaps and box plots of the de-stress metrics that are included in figure 4. 
+
+First, create the conda environment and activate it with the command below.
+
+```bash 
+conda env create -f de-stress-analysis/environment.yml
+conda activate pda_destress_analysis
+```
+
+After this download `destress_data_designs_082024.csv`, `destress_data_pdb_082024.csv`, `design_meta_data_20240827.json`, `designed_chains_pdb_files/` and `pdb_all_files_june_2024/` from the supplementary materials and place them in the `de-stress-analysis/data/raw_data/` folder.
+
+Next, run the `de-stress-analysis/data_prep_destress.py` and `de-stress-analysis/data_prep_aa_comp.py` scripts to prepare the data. 
+
+Finally, run the `de-stress-analysis/analysis_destress.py` and `de-stress-analysis/analysis_aa_comp.py` scripts to produce the plots that were used in the paper and these will be saved in the `de-stress-analysis/analysis/` folder.
+
+
 ## Graphs
 
 Code for plotting protein designs' growth curve.
