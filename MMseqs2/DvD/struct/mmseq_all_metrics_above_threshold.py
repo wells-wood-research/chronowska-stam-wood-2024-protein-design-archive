@@ -2,16 +2,18 @@ import pandas as pd
 import json
 import datetime
 
-# Struct or chains
-anal_type = "struct"
-base_dir = f"/home/mchrnwsk/fs6/{anal_type}/"
+# Struct or chain
+analysis_type = "dvd, struct"
+result_dir = "/home/mchrnwsk/personal/pda-destress-analysis/similarity/mmseq/try5/d-v-d/struct/"
+output_dir = "/home/mchrnwsk/chronowska-stam-wood-2024-protein-design-archive/MMseqs2/DvD/struct/"
+data_dir = "/home/mchrnwsk/personal/pda-destress-analysis/data/"
 
 # Define the metrics
-metrics = ["prob", "lddt", "alntmscore", "evalue"]
+metrics = ["pident", "bits"]
 
 # Dynamically create file paths and dictionaries for each metric
 output_files = {
-    metric: base_dir + f"analysis/foldseek_highest_{metric}.json"
+    metric: output_dir + f"mm_related_by_{metric}.json"
     for metric in metrics
 }
 dicts = {
@@ -20,22 +22,19 @@ dicts = {
 }
 
 # Load data
-file_name = pd.read_csv(base_dir + "output/resultDB", sep="\t", header=None, names=[
-    "query_name", "query_length", "target_name", "target_length", 
-    "prob", "lddt", "pident", "cigar", 
-    "fragment_of_query_covered_by_target", "fragment_of_target_covered_by_query", 
-    "alntmscore", "lddt_1", "evalue", "bits"])
-data = pd.read_json(base_dir + "analysis/20240827_data.json")
-pdb_release = pd.read_csv(base_dir + "analysis/combined.csv")
+file_name = pd.read_csv(result_dir + "results.m8", sep="\t", header=None, index_col=False, names=["query_name", "query_length", "target_name", "target_length", "bits", "pident", "raw", "cigar", "fragment_of_query_covered_by_target", "fragment_of_target_covered_by_query"])
+data = pd.read_json(data_dir + "20240827_data.json")
+pdb_release = pd.read_csv(data_dir + "pdb_release_dates/combined.csv")
 
 # Preprocess data into dictionaries for faster lookup
 data_dict = dict(zip(data["pdb"].str.lower(), data["release_date"]))
 pdb_release_dict = dict(zip(pdb_release["Entry ID"].str.lower(), pdb_release["Release Date"]))
+excluded_pdbs = set(data["pdb"].str.lower())
 
 # Iterate through file_name DataFrame
 for i, row in file_name.iterrows():
     if i % 1000 == 0:
-        print(f"{anal_type}: {i}/{len(file_name)}")
+        print(f"{analysis_type}: {i}/{len(file_name)}")
         
     query_name = row["query_name"][:4].lower()
     target_name = row["target_name"][:4].lower()
@@ -54,10 +53,17 @@ for i, row in file_name.iterrows():
         continue
 
     # Iterate over each metric and update the respective dictionary
-    for metric in metrics:
-        similarity = row[metric]
-        if query_name not in dicts[metric] or dicts[metric][query_name]["sim"] < similarity:
-            dicts[metric][query_name] = {"sim": similarity, "partner": target_name}
+    sim_pident = row["pident"]
+    if query_name not in dicts["pident"]:
+        dicts["pident"][query_name] = []
+    if sim_pident > 90:
+        dicts["pident"][query_name].append({"sim": sim_pident, "partner": target_name})
+
+    sim_bits = row["bits"]
+    if query_name not in dicts["bits"]:
+        dicts["bits"][query_name] = []
+    if sim_bits > 200:
+        dicts["bits"][query_name].append({"sim": sim_bits, "partner": target_name})
 
 # Save the results as JSON for each metric
 for metric in metrics:

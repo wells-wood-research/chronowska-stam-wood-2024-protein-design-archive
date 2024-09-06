@@ -2,16 +2,16 @@ import pandas as pd
 import json
 import datetime
 
-# Struct or chain
-analysis_type = "chain"
-base_dir = f"./{analysis_type}/"
+# Struct or chains
+anal_type = "chain"
+base_dir = f"/home/mchrnwsk/fs6/{anal_type}/"
 
 # Define the metrics
-metrics = ["prob", "lddt", "pident", "alntmscore", "evalue", "bits"]
+metrics = ["prob", "lddt", "alntmscore", "evalue"]
 
 # Dynamically create file paths and dictionaries for each metric
 output_files = {
-    metric: base_dir + f"analysis/foldseek_related_by_{metric}.json"
+    metric: base_dir + f"analysis/foldseek_highest_{metric}.json"
     for metric in metrics
 }
 dicts = {
@@ -31,17 +31,16 @@ pdb_release = pd.read_csv(base_dir + "analysis/combined.csv")
 # Preprocess data into dictionaries for faster lookup
 data_dict = dict(zip(data["pdb"].str.lower(), data["release_date"]))
 pdb_release_dict = dict(zip(pdb_release["Entry ID"].str.lower(), pdb_release["Release Date"]))
-excluded_pdbs = set(data["pdb"].str.lower())
 
 # Iterate through file_name DataFrame
 for i, row in file_name.iterrows():
     if i % 1000 == 0:
-        print(f"{analysis_type}: {i}/{len(file_name)}")
+        print(f"{anal_type}: {i}/{len(file_name)}")
         
     query_name = row["query_name"][:4].lower()
     target_name = row["target_name"][:4].lower()
     
-    if query_name == target_name or target_name in excluded_pdbs:
+    if query_name == target_name:
         continue
 
     try:
@@ -57,10 +56,8 @@ for i, row in file_name.iterrows():
     # Iterate over each metric and update the respective dictionary
     for metric in metrics:
         similarity = row[metric]
-        if query_name not in dicts[metric]:
-            dicts[metric][query_name] = []
-        if similarity > 0.9:
-            dicts[metric][query_name]["sim"].append({"sim": similarity, "partner": target_name})
+        if query_name not in dicts[metric] or dicts[metric][query_name]["sim"] < similarity:
+            dicts[metric][query_name] = {"sim": similarity, "partner": target_name}
 
 # Save the results as JSON for each metric
 for metric in metrics:
