@@ -1,1 +1,6 @@
-./*/*/*/*.json
+Foldseek/DvD/chains/*.json
+Foldseek/DvD/struct/*.json
+Foldseek/DvP/chains/*.json
+Foldseek/DvP/struct/*.json
+MMseqs2/DvD/chains/*.json
+MMseqs2/DvP/chains/*.json
