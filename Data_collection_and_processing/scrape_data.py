@@ -28,7 +28,7 @@ filename_output = "data/20240930_data"
 
 cif_dir_path = "./data/cif_files/"
 
-new_data_column_names = ["pdb","picture_path", "chains", "authors", "classification", "classification_suggested", "classification_suggested_reason", "subtitle", "tags", "keywords", "release_date", "publication", "publication_ref",  "publication_country", "abstract", "crystal_structure", "symmetry", "exptl_method", "formula_weight", "synthesis_comment", "review", "previous_design", "next_design"]
+new_data_column_names = ["pdb","picture_path", "chains", "authors", "classification", "classification_suggested", "classification_suggested_reason", "subtitle", "tags", "keywords", "release_date", "publication", "publication_ref",  "publication_country", "abstract", "crystal_structure", "symmetry", "exptl_method", "formula_weight", "synthesis_comment", "review", "review_comment", "previous_design", "next_design"]
 new_data = pd.DataFrame(columns=new_data_column_names)
 
 summary = {}
