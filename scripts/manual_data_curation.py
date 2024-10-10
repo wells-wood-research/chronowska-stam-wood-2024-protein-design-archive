@@ -1,9 +1,19 @@
 import pandas as pd
-import numpy as np
+import argparse
 
-filename_dataset = "/home/mchrnwsk/chronowska-stam-wood-2024-protein-design-archive/data/20240930_data"
+update_date = "20240930"
 
-data = pd.read_json(filename_dataset+".json")
+parser = argparse.ArgumentParser(description="Process MMseqs2 analysis")
+parser.add_argument("-i", "--input", default="reordered", type=str, required=True, help="Label of data input (just \"reordered\" for \"20240930_data_reordered.json\")")
+parser.add_argument("-o", "--output", default="curated", type=str, required=True, help="Label of data output (just \"curated\" for \"20240930_data_curated.json\")")
+args = parser.parse_args()
+
+input_type = args.input
+output_type = args.output
+
+base_dir_data = "/home/mchrnwsk/pda-destress-analysis/data"
+base_dir_git = "/home/mchrnwsk/chronowska-stam-wood-2024-protein-design-archive"
+data = pd.read_json(base_dir_data+"/"+update_date+"_data_"+input_type+".json")
 
 data["review_comment"] = pd.Series([[""]] * len(data))
 
@@ -34,4 +44,4 @@ chains_1mey[0][2]["chain_type"] = "D"
 data.loc[data["pdb"] == "1mey", "chains"] = chains_1mey
 data.at[index_1mey, "review_comment"] = [["2024-10-07: Confirm chains A, D, B, E to be DNA rather than unknown", "2024-10-07: Confirm chain C, F, G to be de novo designed rather than unknown"]]
 
-data_result = data.to_json(filename_dataset+"_curated.json", orient="records", indent=4)
+data_result = data.to_json(base_dir_data+"/"+update_date+"_data_"+output_type+".json", orient="records", indent=4)
