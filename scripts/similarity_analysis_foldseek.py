@@ -11,7 +11,7 @@ parser.add_argument("-d", "--date", type=str, required=True, help="Update date i
 parser.add_argument("-a", "--thr_or_max", type=str, required=True, help="Find metric values above threshold or highest per design (\"thr\" or \"max\")")
 parser.add_argument("-p", "--prot_or_des", type=str, required=True, help="Compare designs against designs or natural proteins (\"DvD\" or \"DvP\")")
 parser.add_argument("-m", "--metric", default="lddt", type=str, required=True, help="Metric to use (lddt)")
-parser.add_argument("-t", "--threshold", default=0.9, type=float, required=True, help="Threshold for metric similarity (0.9)")
+parser.add_argument("-t", "--threshold", default=0.9, type=float, required=True, help="Threshold for metric similarity (0.9)") # Always required for naming
 args = parser.parse_args()
 
 # Assign command-line arguments to variables
@@ -36,8 +36,7 @@ pdb_release = pd.read_csv(current_dir_foldseek_analysis+"/"+"all_pdb_release_dat
 data_dict = dict(zip(data["pdb"].str.lower(), data["release_date"]))
 results = pd.read_csv(current_dir_foldseek+"/"+"output/resultDB", sep="\t")
 pdb_release_dict = dict(zip(pdb_release["Entry ID"].str.lower(), pdb_release["Release Date"]))
-if prot_or_des != "DvD":
-    excluded_pdbs = set(data["pdb"].str.lower())
+excluded_pdbs = set(data["pdb"].str.lower())
 metric_dict = {}
 
 chunksize = 10000
@@ -55,7 +54,8 @@ for chunk in pd.read_csv(current_dir_foldseek+"/"+"output/resultDB", sep="\t", h
         
         if query_name == target_name:
             continue
-
+        if query_name not in excluded_pdbs: # To deal with similarity mistakenly calculated for entries that are not in the dataset, only because they were in the pdb files
+            continue
         if prot_or_des != "DvD":
             if target_name in excluded_pdbs:
                 continue
@@ -64,7 +64,7 @@ for chunk in pd.read_csv(current_dir_foldseek+"/"+"output/resultDB", sep="\t", h
             query_release = datetime.date.fromisoformat(data_dict[query_name])
             target_release = datetime.date.fromisoformat(pdb_release_dict.get(target_name, "1900-01-01"))
         except KeyError as e:
-            print(f"Error at query: {query_name}. Missing release date for target: {target_name}")
+            print(f"Error at query: {query_name}, target: {target_name}. {e} not found.")
             continue
 
         if prot_or_des != "DvD":

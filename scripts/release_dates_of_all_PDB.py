@@ -23,6 +23,11 @@ for file in all_files:
 # Concatenate all the DataFrames into one
 combined_df = pd.concat(dfs, ignore_index=True)
 
+# Make IDs lowercase
 combined_df["Entry ID"] = combined_df["Entry ID"].str.lower()
 
+# Remove duplicates based on "Entry ID"
+combined_df = combined_df.drop_duplicates(subset="Entry ID", keep='first')
+
 combined_df.to_csv("/home/mchrnwsk/pda-destress-analysis/data/all_pdb_release_dates.csv", sep=",", index=False)
+print("Output saved to /home/mchrnwsk/pda-destress-analysis/data/all_pdb_release_dates.csv")

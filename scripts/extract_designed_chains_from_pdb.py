@@ -1,34 +1,7 @@
 import re
 import pandas as pd
 from pdbUtils import pdbUtils
-import os
-
-data = pd.read_json("/home/mchrnwsk/pda-destress-analysis/data/20240930_data_curated.json")
-base_dir = "/home/mchrnwsk/pda-destress-analysis/data/pdb_files"
-chain_dir = base_dir+"_chains"
-
-standard_amino_acids = {
-    "ALA": "A",
-    "CYS": "C",
-    "ASP": "D",
-    "GLU": "E",
-    "PHE": "F",
-    "GLY": "G",
-    "HIS": "H",
-    "ILE": "I",
-    "LYS": "K",
-    "LEU": "L",
-    "MET": "M",
-    "ASN": "N",
-    "PRO": "P",
-    "GLN": "Q",
-    "ARG": "R",
-    "SER": "S",
-    "THR": "T",
-    "VAL": "V",
-    "TRP": "W",
-    "TYR": "Y",
-}
+import argparse
 
 def extract_designed_chains(pdb_file):
 
@@ -118,43 +91,62 @@ def set_chains_manually(pdb, designed_chains):
                 print("All designed chain labels: ", designed_chains)
                 print("\n")
 
-for i, row in data.iterrows():
-    pdb = row["pdb"]
+def main(next_date):
+    global base_dir, chain_dir
+    base_dir = "/home/mchrnwsk/pda-destress-analysis/data/pdb_files"
+    chain_dir = f"{base_dir}_chains"
 
-    if pdb == "1mey":
-        set_chains_manually(pdb, ["C", "F", "G"])
-        continue
-    elif pdb == "2lq4":
-        set_chains_manually(pdb, ["p"])
-        continue
-    elif pdb == "8ub3":
-        set_chains_manually(pdb, ["A", "B", "C", "D", "E", "F", "G", "H", "J", "K", "L", "M", "Q", "U", "c", "k", "s", "w", "4", "Z"])
-        continue
-    else:
-        try:
-            pdb_file_assembly = base_dir+"/"+pdb.lower() + ".pdb1"
-            pdb_file = base_dir+"/"+pdb.lower() + ".pdb"
-            current_pdb_chain_sources = extract_designed_chains(pdb_file)
-            df = pdbUtils.pdb2df(pdb_file_assembly)
-        except:
-            print(pdb + " file not found.")
+    data = pd.read_csv(f"/home/mchrnwsk/pda-destress-analysis/data/{next_date}_pdb_codes.txt", header=None)
+    data = data.transpose().reset_index(drop=True)
+    data.rename(columns={data.columns[0]: "pdb"}, inplace=True)
+
+    for i, row in data.iterrows():
+        pdb = row["pdb"].strip()
+
+        if pdb == "1mey":
+            set_chains_manually(pdb, ["C", "F", "G"])
             continue
-        
-        designed_chains = []
-        for key in current_pdb_chain_sources:
-            if current_pdb_chain_sources[key]["source"] == "designed" or not current_pdb_chain_sources[key]["source"]:
-                designed_chains += current_pdb_chain_sources[key]["chains"].split(", ")
-
-        designed_chains_only_df = pd.DataFrame(columns = df.columns)
-        
-        for chain_label in designed_chains:
-            outfile = chain_dir+"/"+pdb+"_"+chain_label+".pdb"
+        elif pdb == "2lq4":
+            set_chains_manually(pdb, ["p"])
+            continue
+        elif pdb == "8ub3":
+            set_chains_manually(pdb, ["A", "B", "C", "D", "E", "F", "G", "H", "J", "K", "L", "M", "Q", "U", "c", "k", "s", "w", "4", "Z"])
+            continue
+        else:
             try:
-                designed_chains_only_df = df[df["CHAIN_ID"] == chain_label]
-                pdbUtils.df2pdb(designed_chains_only_df, outfile)
-            except Exception as e:
-                if not set(designed_chains).intersection(df["CHAIN_ID"].unique().tolist()):
-                    print(pdb, " exception", e)
-                    print("All chain labels in PDB: ", df["CHAIN_ID"].unique().tolist())
-                    print("All designed chain labels: ", designed_chains)
-                    print("\n")
+                pdb_file_assembly = f"{base_dir}/{pdb.lower()}.pdb1"
+                pdb_file = f"{base_dir}/{pdb.lower()}.pdb"
+                current_pdb_chain_sources = extract_designed_chains(pdb_file)
+                df = pdbUtils.pdb2df(pdb_file_assembly)
+            except:
+                print(pdb + " file not found.")
+                continue
+            
+            designed_chains = []
+            for key in current_pdb_chain_sources:
+                if current_pdb_chain_sources[key]["source"] == "designed" or not current_pdb_chain_sources[key]["source"]:
+                    designed_chains += current_pdb_chain_sources[key]["chains"].split(", ")
+
+            designed_chains_only_df = pd.DataFrame(columns = df.columns)
+            
+            for chain_label in designed_chains:
+                outfile = f"{chain_dir}/{pdb}_{chain_label}.pdb"
+                try:
+                    designed_chains_only_df = df[df["CHAIN_ID"] == chain_label]
+                    pdbUtils.df2pdb(designed_chains_only_df, outfile)
+                except Exception as e:
+                    if not set(designed_chains).intersection(df["CHAIN_ID"].unique().tolist()):
+                        print(pdb, " exception", e)
+                        print("All chain labels in PDB: ", df["CHAIN_ID"].unique().tolist())
+                        print("All designed chain labels: ", designed_chains)
+                        print("\n")
+
+if __name__ == "__main__":
+    # Parse command-line arguments
+    parser = argparse.ArgumentParser(description='Extract designed chains from PDB files')
+    parser.add_argument('--next', required=True, help='Next date (e.g., 20240930)')
+    args = parser.parse_args()
+    
+    next_date = args.next
+
+    main(next_date)

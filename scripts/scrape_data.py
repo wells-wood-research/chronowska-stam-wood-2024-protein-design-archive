@@ -1,3 +1,5 @@
+import argparse
+import os
 import pandas as pd
 import urllib.request
 from bs4 import BeautifulSoup
@@ -12,77 +14,10 @@ nltk.download('stopwords')
 import gc
 import logging
 import numpy as np
-logging.basicConfig(filename='scraping_log.txt', level=logging.INFO)
 
-update_date = "20240930"
-previous_update_date = "20240827"
-
-# Define chunk size for processing
-chunk_size = 100
-
-base_dir_data = "/home/mchrnwsk/pda-destress-analysis/data"
-base_dir_git = "/home/mchrnwsk/chronowska-stam-wood-2024-protein-design-archive"
-data = pd.read_json(base_dir_data+"/"+update_date+"_data.json")
-
-# Filenames:
-filename_old_pdb_codes = f"{base_dir_data}/{previous_update_date}_pdb_codes.csv"
-filename_new_pdb_codes = f"{base_dir_git}/data/{update_date}_pdb_codes.csv"
-filename_pdb_codes_to_manually_add = f"{base_dir_git}/entries_to_manually_include.csv"
-filename_pdb_codes_to_manually_remove = f"{base_dir_git}/entries_to_manually_exclude.csv"
-filename_output = f"{base_dir_data}/{update_date}_data"
-
-cif_dir_path = "./data/cif_files/"
-
-new_data_column_names = ["pdb","picture_path", "chains", "authors", "classification", "classification_suggested", "classification_suggested_reason", "subtitle", "tags", "keywords", "release_date", "publication", "publication_ref",  "publication_country", "abstract", "crystal_structure", "symmetry", "exptl_method", "formula_weight", "synthesis_comment", "review", "previous_design", "next_design"]
-new_data = pd.DataFrame(columns=new_data_column_names)
-
-summary = {}
-
-dek_data = pd.read_csv(f"{base_dir_data}/dek_classification.csv", sep=",", index_col=0) 
-class_dict = {
-    "small, non-systematic, and other":["minimal"],
-    "engineered":["engineered"],
-    "D.N. Woolfson":["rational"],
-    "C.W. Wood":["computational"],
-    "D. Baker":["computational", "deep-learning based"],
-    "W.F. DeGrado":["computational", "consensus"], #"minimal", "rational", "physics-based"
-    "M.H. Hecht":["minimal"],
-    "J.S. Richardson":["minimal"],
-    "D.C. Richardson":["minimal"],
-    "P.L. Dutton":["minimal"],
-    "R.S. Hodges":["minimal"],
-    "L. Regan":["rational", "consensus"],
-    "T. Alber":["rational", "computational", "physics-based"],
-    "V.P. Conticello":["rational"],
-    "P.S. Kim":["rational", "computational", "physics-based"],
-    "V.L. Pecoraro":["rational"],
-    "T. Kortemme":["rational"],
-    "L. Serrano":["rational"],
-    "J.M. Berg":["consensus"],
-    "B. Imperiali":["consensus"],
-    "Z.-Y. Peng":["consensus"],
-    "A. Pluckthun":["consensus"],
-    "A.M. Buckle":["consensus"],
-    "M. Lehmann":["consensus"],
-    "P. Minard":["consensus"],
-    "O. Rackham":["consensus"],
-    "P.B. Harbury":["computational", "physics-based"],
-    "B.R. Donald":["computational"],
-    "A.R. Thomson":["computational"],
-    "S.L. Mayo":["computational"]
-    }
-
-# Read in pdb codes to scrape information for
-pdb = pd.read_csv(filename_old_pdb_codes, sep=",", header=None).reset_index(drop=True)
-new_pdb_codes = pd.read_csv(filename_new_pdb_codes, sep=",", header=None).reset_index(drop=True)
-pdb_codes_to_manually_add = pd.read_csv(filename_pdb_codes_to_manually_add, sep=",", header=None).reset_index(drop=True)
-pdb_codes_to_manually_remove = pd.read_csv(filename_pdb_codes_to_manually_remove, sep=",", header=None).reset_index(drop=True)
-
-pdb_codes = pd.concat([pdb, new_pdb_codes, pdb_codes_to_manually_add])
-pdb_codes.drop_duplicates(inplace=True)
-pdb_codes = pdb_codes[~pdb_codes[0].isin(pdb_codes_to_manually_remove[0])]
-pdb_codes.sort_values(by=pdb_codes.columns[0], inplace=True)
-pdb_codes.reset_index(drop=True, inplace=True)
+log_path = "scraping_log.txt"
+os.remove(log_path)
+logging.basicConfig(filename=log_path, level=logging.INFO)
 
 # "Get" functions - data scraping
 def get_picture_path(pdb):
@@ -351,10 +286,6 @@ def get_xray(pdb, cif_dict):
         xray_cell_angle_alpha = ""
         xray_cell_angle_beta = ""
         xray_cell_angle_gamma = ""
-    try:
-        xray_symmetry_space_group_name_H_M = cif_dict["_symmetry.space_group_name_H-M"].strip()
-    except:
-        xray_symmetry_space_group_name_H_M = ""
         
     crystal_structure = {"length_a":xray_cell_length_a, "length_b":xray_cell_length_b, "length_c":xray_cell_length_c, "angle_a":xray_cell_angle_alpha, "angle_b":xray_cell_angle_beta, "angle_g":xray_cell_angle_gamma}
 
@@ -446,7 +377,7 @@ def fix_single_unknown_chains(df):
     return df
 
 # Fill new dataframe
-def fill_data(data, pdb):
+def fill_data(data, pdb, cif_dir_path):
     summary[pdb] = []
     
     try:
@@ -511,30 +442,6 @@ def fill_data(data, pdb):
 
     return data
 
-def process_pdb_codes(pdb_codes):
-    for pdb in pdb_codes[0]:
-        yield pdb
-
-num_chunks = len(pdb_codes) // chunk_size + 1
-
-for i, chunk in enumerate(np.array_split(pdb_codes, num_chunks)):
-    for pdb in process_pdb_codes(chunk):
-        logging.info(f"Processing chunk: {i}, entry: {pdb}")
-        try:
-            new_data = fill_data(new_data, pdb)
-        except Exception as e:
-            logging.error(f"Error processing {pdb}: {str(e)}")
-    new_data["formula_weight"] = new_data["formula_weight"].astype(float)
-    new_data.to_json(f"{filename_output}_{i}", orient="records", indent=4)
-    del new_data
-    gc.collect()
-    new_data = pd.DataFrame(columns=new_data_column_names)
-
-for i in range(num_chunks):
-    path = f"{filename_output}_{i}"
-    df = pd.read_json(path)
-    new_data = pd.concat([new_data, df])
-
 def get_prev_and_next_design(df):
     df = df.sort_values("pdb").reset_index(drop=True)
     for i in range(len(df)):
@@ -545,12 +452,147 @@ def get_prev_and_next_design(df):
         df.at[i, "next_design"] = df.at[next_index, "pdb"]
     return df
 
-# Tidy up
-tidy_data = data.drop_duplicates(subset="pdb")
-tidy_data.sort_values(by="pdb", inplace=True)
-tidy_data.reset_index(drop=True)
-tidy_data["formula_weight"] = tidy_data["formula_weight"].astype(float)
+def main(next_date, prev_date, all_option):
+    global summary, cif_dir_path, dek_data, class_dict
 
-reordered_data = get_prev_and_next_design(tidy_data)
+    # Define paths
+    base_dir_data = "/home/mchrnwsk/pda-destress-analysis/data"
+    base_dir_git = "/home/mchrnwsk/chronowska-stam-wood-2024-protein-design-archive"
+    cif_dir_path = f"{base_dir_data}/cif_files/"
 
-data_result = reordered_data.to_json(base_dir_data+"/"+update_date+"_data_reordered.json", orient="records", indent=4)
+    # Filenames:
+    filename_old_pdb_codes = f"{base_dir_git}/data/{prev_date}_data_curated.json"
+    filename_new_pdb_codes = f"{base_dir_git}/data/{next_date}_pdb_codes.csv"
+    filename_pdb_codes_to_manually_add = f"{base_dir_git}/entries_to_manually_include.csv"
+    filename_pdb_codes_to_manually_remove = f"{base_dir_git}/entries_to_manually_exclude.csv"
+    filename_output = f"{base_dir_data}/{next_date}_data"
+
+    new_data_column_names = ["pdb","picture_path", "chains", "authors", "classification", "classification_suggested", "classification_suggested_reason", "subtitle", "tags", "keywords", "release_date", "publication", "publication_ref",  "publication_country", "abstract", "crystal_structure", "symmetry", "exptl_method", "formula_weight", "synthesis_comment", "review", "previous_design", "next_design"]
+
+    # Read in pdb codes to scrape information for
+    old_pdb = pd.read_json(filename_old_pdb_codes)["pdb"].reset_index(drop=True)
+    new_pdb_codes = pd.read_csv(filename_new_pdb_codes, sep=",", header=None)[0].reset_index(drop=True)
+    pdb_codes_to_manually_add = pd.read_csv(filename_pdb_codes_to_manually_add, sep=",", header=None)[0].reset_index(drop=True)
+    pdb_codes_to_manually_remove = pd.read_csv(filename_pdb_codes_to_manually_remove, sep=",", header=None)[0].reset_index(drop=True)
+
+    if not all_option:
+        pdb_codes = pd.concat([new_pdb_codes, pdb_codes_to_manually_add])
+        pdb_codes.drop_duplicates(inplace=True)
+        pdb_codes = pdb_codes[~pdb_codes.isin(old_pdb)]
+        pdb_codes = pdb_codes[~pdb_codes.isin(pdb_codes_to_manually_remove)]
+        pdb_codes.sort_values(inplace=True)
+        pdb_codes.reset_index(drop=True, inplace=True)
+    else:
+        pdb_codes = pd.concat([old_pdb, new_pdb_codes, pdb_codes_to_manually_add])
+        pdb_codes.drop_duplicates(inplace=True)
+        pdb_codes = pdb_codes[~pdb_codes.isin(pdb_codes_to_manually_remove)]
+        pdb_codes.sort_values(inplace=True)
+        pdb_codes.reset_index(drop=True, inplace=True)
+
+    print("PDB codes to add initiated:\n", pdb_codes)
+
+    summary = {}
+
+    dek_data = pd.read_csv(f"{base_dir_data}/dek_classification.csv", sep=",", index_col=0) 
+    class_dict = {
+        "small, non-systematic, and other":["minimal"],
+        "engineered":["engineered"],
+        "D.N. Woolfson":["rational"],
+        "C.W. Wood":["computational"],
+        "D. Baker":["computational", "deep-learning based"],
+        "W.F. DeGrado":["computational", "consensus"], #"minimal", "rational", "physics-based"
+        "M.H. Hecht":["minimal"],
+        "J.S. Richardson":["minimal"],
+        "D.C. Richardson":["minimal"],
+        "P.L. Dutton":["minimal"],
+        "R.S. Hodges":["minimal"],
+        "L. Regan":["rational", "consensus"],
+        "T. Alber":["rational", "computational", "physics-based"],
+        "V.P. Conticello":["rational"],
+        "P.S. Kim":["rational", "computational", "physics-based"],
+        "V.L. Pecoraro":["rational"],
+        "T. Kortemme":["rational"],
+        "L. Serrano":["rational"],
+        "J.M. Berg":["consensus"],
+        "B. Imperiali":["consensus"],
+        "Z.-Y. Peng":["consensus"],
+        "A. Pluckthun":["consensus"],
+        "A.M. Buckle":["consensus"],
+        "M. Lehmann":["consensus"],
+        "P. Minard":["consensus"],
+        "O. Rackham":["consensus"],
+        "P.B. Harbury":["computational", "physics-based"],
+        "B.R. Donald":["computational"],
+        "A.R. Thomson":["computational"],
+        "S.L. Mayo":["computational"]
+        }
+
+    # Define chunk size for next_dateing
+    chunk_size = 100
+    num_chunks = len(pdb_codes) // chunk_size + 1
+
+    for i, chunk in enumerate(np.array_split(pdb_codes, num_chunks)):
+        print(f"Processing chunk {i} of {num_chunks}.")
+        new_data = pd.DataFrame(columns=new_data_column_names)
+        for pdb in chunk:
+            logging.info(f"updating chunk: {i}, entry: {pdb}")
+            try:
+                new_data = fill_data(new_data, pdb, cif_dir_path)
+            except Exception as e:
+                logging.error(f"Error updating {pdb}: {str(e)}")
+        new_data["formula_weight"] = new_data["formula_weight"].astype(float)
+        new_data.to_json(f"{filename_output}_{i}", orient="records", indent=4)
+        del new_data
+        gc.collect()
+
+    print("Concatenating chunks into one dataframe.")    
+   # Concatenating chunks into one dataframe
+    all_chunked_data = pd.DataFrame(columns=new_data_column_names)
+    for i in range(num_chunks):
+        path = f"{filename_output}_{i}"
+        df = pd.read_json(path)
+        all_chunked_data = pd.concat([all_chunked_data, df], ignore_index=True)
+        try:
+            os.remove(path)
+        except OSError as e:
+            logging.error(f"Error deleting file {path}: {str(e)}")
+
+    # Ensure '0' column is removed if it appears
+    all_chunked_data = all_chunked_data.loc[:, new_data_column_names]
+    old_pdb = pd.read_json(filename_old_pdb_codes).reset_index(drop=True)
+
+    # Concatenate old and new data
+    if not all_option:
+        new_data = pd.concat([old_pdb, all_chunked_data], ignore_index=True)
+    else:
+        new_data = all_chunked_data
+
+    new_data_curated = new_data[~new_data["pdb"].isin(pdb_codes_to_manually_remove)]
+    # Tidy up
+    print("Tidy up: remove duplicates.")
+    tidy_data = new_data_curated.drop_duplicates(subset="pdb")
+    print("Tidy up: sort values.")
+    tidy_data.sort_values(by="pdb", inplace=True)
+    print("Tidy up: reset index.")
+    tidy_data.reset_index(drop=True)
+    tidy_data["formula_weight"] = tidy_data["formula_weight"].astype(float)
+    print("Tidy up: encode previous and next designs.")
+    reordered_data = get_prev_and_next_design(tidy_data)
+
+    data_result = reordered_data.to_json(f"{base_dir_data}/{next_date}_data_reordered.json", orient="records", indent=4)
+    print(f"Data saved to {base_dir_data}/{next_date}_data.json")
+
+if __name__ == "__main__":
+   # Parse command-line arguments
+    parser = argparse.ArgumentParser(description='Scrape PDB data')
+    parser.add_argument('--next', required=True, help='Next date (e.g., 20240930)')
+    parser.add_argument('--prev', required=True, help='Prev date (e.g., 20240827)')
+    parser.add_argument('--all', action='store_true', help='Scrape for the whole dataset, not just new codes.')
+    args = parser.parse_args()
+    
+    next_date = args.next
+    prev_date = args.prev
+    all_option = args.all
+
+    print("Logging in /home/mchrnwsk/pda-destress-analysis/scraping_log.txt")
+    main(next_date, prev_date, all_option)
