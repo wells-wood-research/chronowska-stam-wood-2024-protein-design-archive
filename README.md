@@ -9,6 +9,7 @@ Due to nature of the PDA and resources that it builds on, we believe that presen
 * ```entries_to_manually_exclude.csv``` which lists PDB codes that have come up in search for designed proteins on the RCSB PDB, but which we believe are not relevant to the field of _de novo protein design_.
 * ```entries_to_manually_include.csv``` which lists PDB codes that we believe are relevant to the field of _de novo protein design_, but do not come up in search for designed proteins due to their labelling (predominantly the "older" entries).
 * ```entries_manually_reviewed.csv``` which lists PDB codes that we have manually reviewed and confirm our belief that they belong to the PDA - this will grow with time and eventually contain the whole dataset.
+
 Edits and comments to the data entries themselves can be found in ```scripts/manual_data_curation.py```.
 
 # Data preparation
