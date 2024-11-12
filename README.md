@@ -54,6 +54,6 @@ Next, run the `de-stress-analysis/data_prep_destress.py` and `de-stress-analysis
 
 Finally, run the `de-stress-analysis/analysis_destress.py` and `de-stress-analysis/analysis_aa_comp.py` scripts to produce the plots that were used in the paper and these will be saved in the `de-stress-analysis/analysis/` folder.
 
-## Graphs
+### Graphs
 
 Code for plotting protein designs' growth curve.
