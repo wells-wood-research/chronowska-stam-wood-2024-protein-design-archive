@@ -6,9 +6,9 @@ Welcome to the Protein Design Archive (PDA) Database, an up-to-date, complete, o
 # Data curation
 
 Due to nature of the PDA and resources that it builds on, we believe that presenting high-quality, accurate and complete information requires manual curation of the dataset. In order to make this process transparent, we use for the curation version-controlled files and scripts kept in this repository. These are:
-```entries_to_manually_exclude.csv``` which lists PDB codes that have come up in search for designed proteins on the RCSB PDB, but which we believe are not relevant to the field of _de novo protein design_.
-```entries_to_manually_include.csv``` which lists PDB codes that we believe are relevant to the field of _de novo protein design_, but do not come up in search for designed proteins due to their labelling (predominantly the "older" entries).
-```entries_manually_reviewed.csv``` which lists PDB codes that we have manually reviewed and confirm our belief that they belong to the PDA - this will grow with time and eventually contain the whole dataset.
+* ```entries_to_manually_exclude.csv``` which lists PDB codes that have come up in search for designed proteins on the RCSB PDB, but which we believe are not relevant to the field of _de novo protein design_.
+* ```entries_to_manually_include.csv``` which lists PDB codes that we believe are relevant to the field of _de novo protein design_, but do not come up in search for designed proteins due to their labelling (predominantly the "older" entries).
+* ```entries_manually_reviewed.csv``` which lists PDB codes that we have manually reviewed and confirm our belief that they belong to the PDA - this will grow with time and eventually contain the whole dataset.
 Edits and comments to the data entries themselves can be found in ```scripts/manual_data_curation.py```.
 
 # Data preparation
