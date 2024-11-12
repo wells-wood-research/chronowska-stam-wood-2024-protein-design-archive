@@ -5,7 +5,7 @@ Welcome to the Protein Design Archive (PDA) Database, an up-to-date, complete, o
 
 # Data curation
 
-Due to nature of the PDA and resources that it builds on, we believe that presenting high-quality, accurate and complete information requires manual curation of the dataset. In order to make this process transparent, we use for the curation version-controlled files and scripts kept in this repository. These are:
+Due to the nature of the PDA and resources that it builds on, we believe that presenting high-quality, accurate and complete information requires manual curation of the dataset. In order to make this process transparent, we use for the curation version-controlled files and scripts kept in this repository. These are:
 * ```entries_to_manually_exclude.csv``` which lists PDB codes that have come up in search for designed proteins on the RCSB PDB, but which we believe are not relevant to the field of _de novo protein design_.
 * ```entries_to_manually_include.csv``` which lists PDB codes that we believe are relevant to the field of _de novo protein design_, but do not come up in search for designed proteins due to their labelling (predominantly the "older" entries).
 * ```entries_manually_reviewed.csv``` which lists PDB codes that we have manually reviewed and confirm our belief that they belong to the PDA - this will grow with time and eventually contain the whole dataset.
@@ -14,13 +14,13 @@ Edits and comments to the data entries themselves can be found in ```scripts/man
 
 # Data preparation
 ## Improved method of data preparation as of October 2024
-_Edit: code for data preparation used for the monthly updates of the PDA has been much improved since October 2024. In view of much interest in this resource and commitment to maintaining it to the highest standard, updates since October 2024 are performed using the improved method, with accurate designed chain selection; and since October 2024 using semi-automated method, reducing chance of inconsistency and errors that could potentially arise_
+_Edit: code for data preparation used for the monthly updates of the PDA has been much improved since October 2024. In view of much interest in this resource and commitment to maintaining it to the highest standard, updates since October 2024 are performed using the improved method, with accurate designed chain selection and a semi-automated method, reducing chance of inconsistency and errors that could potentially arise_
 
 Data is now collected using the ```main.py``` script, run with flags --next iso_format_date_of_next(current)_update --prev iso_format_date_of_previous_update e.g. --next 20241031 --prev 20240930 for the October 2024 update which includes entries up to 31st October 2024.
 This script relies on other scripts found in scripts directory, but should be self explanatory with the comments and cues printed to the command line.
 
 ## Data preparation for paper submission
-_Below is described the original method used at the time of submission of manuscript "The Protein Design Archive (PDA): insights from 40 years of protein design" (doi: [](https://doi.org/10.1101/2024.09.05.611465)) on 7th September 2024. This method has been improved since them (see section above)._
+_Below is described the original method used at the time of submission of manuscript "The Protein Design Archive (PDA): insights from 40 years of protein design" (doi: [https://doi.org/10.1101/2024.09.05.611465](https://doi.org/10.1101/2024.09.05.611465)) on 7th September 2024. This method has been improved since them (see section above)._
 ### Data_collection_and_processing
 
 Data has been scraped from the RCSB PDB database using the Jupyter notebook ```Prepare_PDA_data.ipynb```.
