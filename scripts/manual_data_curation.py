@@ -39,6 +39,13 @@ def main(next_date, input_type, output_type):
     data.loc[data["pdb"] == "1mey", "chains"] = chains_1mey
     data.at[index_1mey, "review_comment"] = flatten_list([["2024-10-07: Confirm chains A, D, B, E to be DNA rather than unknown", "2024-10-07: Confirm chains C, F, G to be de novo designed rather than unknown"]])
 
+    index_1qys = data.loc[data["pdb"] == "1qys"].index[0]
+    chains_1qys = data[data["pdb"] == "1qys"]["chains"].values
+    chains_1qys[0][0]["chain_type"] = "D"
+    data.loc[data["pdb"] == "1qys", "chains"] = chains_1qys
+    data.at[index_1qys, "review_comment"] = flatten_list(["2024-12-02: Confirm chain A to be de novo designed rather than natural"])
+
+    
     data_result = data.to_json(base_dir_data+"/"+next_date+"_data_"+output_type+".json", orient="records", indent=4)
 
 if __name__ == "__main__":
