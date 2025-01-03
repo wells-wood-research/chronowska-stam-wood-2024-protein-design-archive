@@ -4,36 +4,36 @@
 1qp6
 1v1d
 1zim
-1yod; cp, r; coiled coil
-1jm0; r; coiled coil, metal binding
-1ovv; r; coiled coil, metal binding
-1lt1; r; alpha, metal binding
-1ovr; r; alpha, metal binding
-1ovu; r; alpha, metal binding
-1jmb; r; helix bundle, metal binding
-1ec5; r; helix bundle, metal binding
-1nvo; r; helix bundle, metal binding
-1tgg; r; coiled coil, metal binding
+1yod, cp; r, coiled coil
+1jm0, r, coiled coil; metal binding
+1ovv, r, coiled coil; metal binding
+1lt1, r, alpha; metal binding
+1ovr, r, alpha; metal binding
+1ovu, r, alpha; metal binding
+1jmb, r, helix bundle; metal binding
+1ec5, r, helix bundle; metal binding
+1nvo, r, helix bundle; metal binding
+1tgg, r, coiled coil; metal binding
 2a3d
-2n6h; r; all-b
-2n6i; r; all-b
+2n6h, r, all-b
+2n6i, r, all-b
 2p6j
-2x6p; r; coiled coil, metal binding
-3ljm; r; coiled coil, metal binding
+2x6p, r, coiled coil; metal binding
+3ljm, r, coiled coil; metal binding
 3al1
 3i1c
 3kd7
 3lhp
 3u0s
 3vcd
-3v45; cp, e; catalytic triad, hydrolase, enzyme
-4ess; cp, e; catalytic triad, hydrolase, enzyme
-4etj; cp, e; catalytic triad, hydrolase, enzyme
-4f2v; cp, e; catalytic triad, hydrolase, enzyme
-4jca; cp, e; catalytic triad, hydrolase, enzyme
-4jll; cp, e; catalytic triad, hydrolase, enzyme
-4jvv; cp, e; catalytic triad, hydrolase, enzyme
-4etk; cp, e; catalytic triad, hydrolase, enzyme
+3v45, cp; e, catalytic triad; hydrolase; enzyme
+4ess, cp; e, catalytic triad; hydrolase; enzyme
+4etj, cp; e, catalytic triad; hydrolase; enzyme
+4f2v, cp; e, catalytic triad; hydrolase; enzyme
+4jca, cp; e, catalytic triad; hydrolase; enzyme
+4jll, cp; e, catalytic triad; hydrolase; enzyme
+4jvv, cp; e, catalytic triad; hydrolase; enzyme
+4etk, cp; e, catalytic triad; hydrolase; enzyme
 4fzp
 4hb1
 4ndk
@@ -55,7 +55,7 @@
 6s3d
 6wrv
 6wrx
-6egp; r; coiled coil, metal binding
+6egp, r, coiled coil; metal binding
 7aye
 7dne
 7dnf
