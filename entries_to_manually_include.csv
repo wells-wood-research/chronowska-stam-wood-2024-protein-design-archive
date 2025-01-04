@@ -44,8 +44,8 @@
 4jlr, cp, vaccine; coiled coil
 4yc5
 5kwd, cp, ankyrin repeat; repeat
-5vid
-5vli
+5vid,	cp; e,	miniprotein; protein binding; antiviral
+5vli,	cp; e,	miniprotein; protein binding; antiviral
 5vmr
 6e9t
 6e9v
