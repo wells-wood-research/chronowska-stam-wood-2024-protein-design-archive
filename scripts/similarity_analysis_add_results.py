@@ -14,7 +14,7 @@ def main(next_date):
     base_dir_analysis = f"{base_dir}/similarity"
     base_dir_data = f"{base_dir}/data"
 
-    data = pd.read_json(f"{base_dir_data}/{next_date}_data.json")
+    data = pd.read_json(f"{base_dir_data}/{next_date}_data_scraped.json")
 
     seq_max_sim_dvd = f"{base_dir_analysis}/mmseq/{next_date}/DvD_max_related_sequence_{seq_sim}_{seq_threshold_str}.json"
     seq_max_sim_dvp = f"{base_dir_analysis}/mmseq/{next_date}/DvP_max_related_sequence_{seq_sim}_{seq_threshold_str}.json"

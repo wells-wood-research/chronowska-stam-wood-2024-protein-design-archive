@@ -476,19 +476,25 @@ def main(next_date, prev_date, all_option):
     pdb_codes_to_manually_remove = pd.read_csv(filename_pdb_codes_to_manually_remove, sep=",", header=None)[0].reset_index(drop=True)
 
     if not all_option:
-        pdb_codes = pd.concat([new_pdb_codes, pdb_codes_to_manually_add])
-        pdb_codes.drop_duplicates(inplace=True)
-        pdb_codes = pdb_codes[~pdb_codes.isin(old_pdb)]
-        pdb_codes = pdb_codes[~pdb_codes.isin(pdb_codes_to_manually_remove)]
-        pdb_codes.sort_values(inplace=True)
-        pdb_codes.reset_index(drop=True, inplace=True)
+        codes_to_scrape_file = f"{base_dir_data}/{next_date}_pdb_codes_new_download.txt"
+        #pdb_codes = pd.concat([new_pdb_codes, pdb_codes_to_manually_add])
+        #pdb_codes.drop_duplicates(inplace=True)
+        #pdb_codes = pdb_codes[~pdb_codes.isin(old_pdb)]
+        #pdb_codes = pdb_codes[~pdb_codes.isin(pdb_codes_to_manually_remove)]
+        #pdb_codes.sort_values(inplace=True)
+        #pdb_codes.reset_index(drop=True, inplace=True)
     else:
-        pdb_codes = pd.concat([old_pdb, new_pdb_codes, pdb_codes_to_manually_add])
-        pdb_codes.drop_duplicates(inplace=True)
-        pdb_codes = pdb_codes[~pdb_codes.isin(pdb_codes_to_manually_remove)]
-        pdb_codes.sort_values(inplace=True)
-        pdb_codes.reset_index(drop=True, inplace=True)
+        codes_to_scrape_file = f"{base_dir_data}/{next_date}_pdb_codes_total.txt"
+        #pdb_codes = pd.concat([old_pdb, new_pdb_codes, pdb_codes_to_manually_add])
+        #pdb_codes.drop_duplicates(inplace=True)
+        #pdb_codes = pdb_codes[~pdb_codes.isin(pdb_codes_to_manually_remove)]
+        #pdb_codes.sort_values(inplace=True)
+        #pdb_codes.reset_index(drop=True, inplace=True)
 
+    with open(codes_to_scrape_file, 'r') as file:
+        content = file.read()
+    ids = [item.strip().lower() for item in content.split(',')]
+    pdb_codes = pd.Series(ids)    
     print("PDB codes to add initiated:\n", pdb_codes)
 
     summary = {}
@@ -579,7 +585,7 @@ def main(next_date, prev_date, all_option):
     print("Tidy up: encode previous and next designs.")
     reordered_data = get_prev_and_next_design(tidy_data)
 
-    data_result = reordered_data.to_json(f"{base_dir_data}/{next_date}_data_reordered.json", orient="records", indent=4)
+    data_result = reordered_data.to_json(f"{base_dir_data}/{next_date}_data_scraped.json", orient="records", indent=4)
     print(f"Data saved to {base_dir_data}/{next_date}_data.json")
 
 if __name__ == "__main__":

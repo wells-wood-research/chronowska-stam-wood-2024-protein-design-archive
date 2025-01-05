@@ -10,15 +10,29 @@ def get_pdb_codes_from_json(file_path, uppercase_print):
     else:
         return [entry['pdb'] for entry in data]
 
-def get_pdb_codes_from_csv(file_path):
+def get_pdb_codes_from_csv(file_path, uppercase_print):
     df = pd.read_csv(file_path, header=None)
-    return df[0].tolist()
+    if uppercase_print:
+        return [code.upper() for code in df[0].tolist()]
+    else:
+        return df[0].tolist()
+
+def get_pdb_codes_from_txt(file_path, uppercase_print):
+    with open(file_path, 'r') as file:
+        # Read the file, split by commas, and strip any whitespace from each entry
+        codes = [code.strip() for code in file.read().split(',')]
+    if uppercase_print:
+        return [code.upper() for code in codes]
+    else:
+        return codes
 
 def get_pdb_codes(file_path, uppercase_print):
     if file_path.endswith('.json'):
         return get_pdb_codes_from_json(file_path, uppercase_print)
     elif file_path.endswith('.csv'):
-        return get_pdb_codes_from_csv(file_path)
+        return get_pdb_codes_from_csv(file_path, uppercase_print)
+    elif file_path.endswith('.txt'):
+        return get_pdb_codes_from_txt(file_path, uppercase_print)
     else:
         raise ValueError("Unsupported file type")
 
@@ -36,7 +50,7 @@ def main(file_to_print, file_to_exclude, uppercase_print, output_file):
 
     if file_to_exclude:
         codes_to_exclude = set(get_pdb_codes(file_to_exclude, uppercase_print))
-        result_codes = codes_to_print - codes_to_exclude
+        result_codes = {code.upper() for code in codes_to_print} - {code.upper() for code in codes_to_exclude}
     else:
         result_codes = codes_to_print
 
@@ -45,8 +59,8 @@ def main(file_to_print, file_to_exclude, uppercase_print, output_file):
 if __name__ == "__main__":
     # Parse command-line arguments
     parser = argparse.ArgumentParser(description='Print PDB codes as "code, code, code" etc.; Example usage: python print_pdb_codes_string.py --file path_to_print --exclude path_to_exclude --uppercase True')
-    parser.add_argument('--file', required=True, help='File from which to print PDB codes, can be .CSV or .JSON')
-    parser.add_argument('--exclude', default=None, help='If PDB code found in this file, don\'t print; can be .CSV or .JSON')
+    parser.add_argument('--file', required=True, help='File from which to print PDB codes, can be .CSV, .JSON, or .TXT')
+    parser.add_argument('--exclude', default=None, help='If PDB code found in this file, don\'t print; can be .CSV, .JSON, or .TXT')
     parser.add_argument('--uppercase', action='store_true', help='Whether to print codes in uppercase')
     parser.add_argument('--output', default=None, help='File to save the output; prints to command line if not specified')
     args = parser.parse_args()

@@ -6,7 +6,7 @@ def main(next_date, to_delete_path):
     # Set the directory path and CSV file path
     base_dir = "/home/mchrnwsk/pda-destress-analysis"
     base_dir_data = f"{base_dir}/data"
-    data = pd.read_json(f"{base_dir_data}/{next_date}_data.json")
+    data = pd.read_json(f"{base_dir_data}/{next_date}_data_scraped.json")
 
     # Iterate over files in the directory
     for filename in os.listdir(to_delete_path):

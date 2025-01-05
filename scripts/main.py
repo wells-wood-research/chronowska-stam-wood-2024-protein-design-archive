@@ -2,6 +2,9 @@ import os
 import subprocess
 import sys
 from datetime import datetime
+import argparse
+
+# Run in /home/mchrnwsk/pda-destress-analysis directory
 
 # Run in "jupyter" environment; packages required:
 # pandas
@@ -21,59 +24,70 @@ def run_command(command, description):
 def wait_for_user(prompt):
     input(f"{prompt} \nPress ENTER to continue...")
 
-def parse_arguments():
-    next_date = None
-    prev_date = None
-    argv = sys.argv[1:]
-
-    for i in range(len(argv)):
-        if argv[i] == '--next' and i + 1 < len(argv):
-            next_date = argv[i + 1]
-        elif argv[i] == '--prev' and i + 1 < len(argv):
-            prev_date = argv[i + 1]
-
-    if not next_date or not prev_date:
-        print("Usage: script.py --next NEXT_DATE --prev PREV_DATE")
-        sys.exit(1)
-
-    return next_date, prev_date
-
-def main():
-    next_date, prev_date = parse_arguments()
-
+def main(next_date, prev_date, all_option=False):
     # Step 1: Review designs. Create file in official github repo for tracking home/mchrnwsk/chronowska-stam-wood-2024-protein-design-archive/data/{next_date}_pdb_codes.csv with new entries.
-    wait_for_user(f"Add reviewed designs to add in the {next_date} update to home/mchrnwsk/chronowska-stam-wood-2024-protein-design-archive/data/{next_date}_pdb_codes.csv")
+    wait_for_user(f"Add reviewed designs to add in the {next_date} update to /home/mchrnwsk/chronowska-stam-wood-2024-protein-design-archive/data/{next_date}_pdb_codes.csv")
     
     # Step 2: Create /home/mchrnwsk/pda-destress-analysis/data/{next_date}_pdb_codes.txt with entries not found in exclude, and found in manually include
-    run_command(
-        f"nano /home/mchrnwsk/pda-destress-analysis/data/{next_date}_pdb_codes_new_download.txt" ,
-        f"Create empty file to save {next_date}_pdb_codes_new_download.txt to"
-    )
-    ## Print codes to add: new codes, excluding ones to exclude
-    run_command(
-        f"python print_pdb_codes_string.py --file ../chronowska-stam-wood-2024-protein-design-archive/data/{next_date}_pdb_codes.csv --exclude ../chronowska-stam-wood-2024-protein-design-archive/entries_to_manually_exclude.csv --uppercase" ,
-        "Running print_pdb_codes_string.py with new_pdb_codes - entires_to_manually_exclude"
-    ) 
-    ## Print codes to add: those to manually include, which haven't been added in previous update
-    run_command(
-        f"python print_pdb_codes_string.py --file ../chronowska-stam-wood-2024-protein-design-archive/entries_to_manually_include.csv --exclude data/{prev_date}_data_curated.json --uppercase" ,
-        "Running print_pdb_codes_string.py with entires_to_manually_include - old_pdb_codes"
-    )
-    wait_for_user(f"Add the above printed codes to /home/mchrnwsk/pda-destress-analysis/data/{next_date}_pdb_codes_new_download.txt")
+    if not all_option:
+        run_command(
+            f"nano /home/mchrnwsk/pda-destress-analysis/data/{next_date}_pdb_codes_new_download.txt" ,
+            f"Create empty file to save {next_date}_pdb_codes_new_download.txt to"
+        )
+        ## Print codes to add: new codes, excluding ones to exclude
+        run_command(
+            f"python print_pdb_codes_string.py --file ../chronowska-stam-wood-2024-protein-design-archive/data/{next_date}_pdb_codes.csv --exclude ../chronowska-stam-wood-2024-protein-design-archive/entries_to_manually_exclude.csv --uppercase" ,
+            "Running print_pdb_codes_string.py with new_pdb_codes - entries_to_manually_exclude"
+        ) 
+        ## Print codes to add: those to manually include, which haven't been added in previous update
+        run_command(
+            f"python print_pdb_codes_string.py --file ../chronowska-stam-wood-2024-protein-design-archive/entries_to_manually_include.csv --exclude data/{prev_date}_data_curated.json --uppercase" ,
+            "Running print_pdb_codes_string.py with entries_to_manually_include - old_pdb_codes"
+        )
+        wait_for_user(f"Add the above printed codes to /home/mchrnwsk/pda-destress-analysis/data/{next_date}_pdb_codes_new_download.txt")
+    if all_option:
+        ## Print codes to add: new codes, excluding ones to exclude
+        run_command(
+            f"python print_pdb_codes_string.py --file ../chronowska-stam-wood-2024-protein-design-archive/data/{next_date}_pdb_codes.csv --exclude ../chronowska-stam-wood-2024-protein-design-archive/entries_to_manually_exclude.csv --uppercase" ,
+            "Running print_pdb_codes_string.py with new_pdb_codes - entries_to_manually_exclude"
+        ) 
+        ## Print codes to add: those to manually include, which haven't been added in previous update
+        run_command(
+            f"python print_pdb_codes_string.py --file ../chronowska-stam-wood-2024-protein-design-archive/entries_to_manually_include.csv --exclude data/{prev_date}_data_curated.json --uppercase" ,
+            "Running print_pdb_codes_string.py with entries_to_manually_include - old_pdb_codes"
+        )
+        run_command(
+            f"nano /home/mchrnwsk/pda-destress-analysis/data/{next_date}_pdb_codes_total.txt" ,
+            f"Create empty file to save {next_date}_pdb_codes_total.txt to"
+        )
+        ## Print codes to add: those to manually include, which haven't been added in previous update
+        run_command(
+            f"python print_pdb_codes_string.py --file data/{prev_date}_data_curated.json --exclude ../chronowska-stam-wood-2024-protein-design-archive/entries_to_manually_exclude.csv --uppercase" ,
+            "Running print_pdb_codes_string.py with old_pdb_codes - entries_to_manually_exclude"
+        )
+        wait_for_user(f"Add the above printed codes and the content of  to /home/mchrnwsk/pda-destress-analysis/data/{next_date}_pdb_codes_total.txt")
 
     # Step 3: Download CIF files
-    run_command(
-        f"bash /home/mchrnwsk/pda-destress-analysis/data/download_pdbs.sh -f /home/mchrnwsk/pda-destress-analysis/data/{next_date}_pdb_codes.txt -o /home/mchrnwsk/pda-destress-analysis/data/cif_files -c",
-        "Downloading CIF files"
-    )
-    run_command(
-        "gunzip -f /home/mchrnwsk/pda-destress-analysis/data/cif_files/*.gz",
-        "Unzipping CIF files"
-    )
+    if all_option:
+        run_command(
+            f"bash /home/mchrnwsk/pda-destress-analysis/data/download_pdbs.sh -f /home/mchrnwsk/pda-destress-analysis/data/{next_date}_pdb_codes_total.txt -o /home/mchrnwsk/pda-destress-analysis/data/cif_files -c",
+            "Downloading CIF files"
+        )
+    else:
+        run_command(
+            f"bash /home/mchrnwsk/pda-destress-analysis/data/download_pdbs.sh -f /home/mchrnwsk/pda-destress-analysis/data/{next_date}_pdb_codes_new_download.txt -o /home/mchrnwsk/pda-destress-analysis/data/cif_files -c",
+            "Downloading CIF files"
+        )
+    gz_files = [f for f in os.listdir("/home/mchrnwsk/pda-destress-analysis/data/cif_files/") if f.endswith('.gz')]
+    if gz_files:
+        run_command(
+            "gunzip -f /home/mchrnwsk/pda-destress-analysis/data/cif_files/*.gz",
+            "Unzipping CIF files"
+        )
 
     # Step 4: Run scrape_data.py
     run_command(
-        f"python scrape_data.py --next {next_date} --prev {prev_date}",
+        f"python scrape_data.py --next {next_date} --prev {prev_date} --all",
         "Running scrape_data.py"
     )
 
@@ -82,7 +96,7 @@ def main():
                   1. Download custom report from the following URL:
                   https://www.rcsb.org/search?request=%7B%22query%22%3A%7B%22type%22%3A%22group%22%2C%22nodes%22%3A%5B%7B%22type%22%3A%22group%22%2C%22nodes%22%3A%5B%7B%22type%22%3A%22group%22%2C%22nodes%22%3A%5B%7B%22type%22%3A%22terminal%22%2C%22service%22%3A%22text%22%2C%22parameters%22%3A%7B%22attribute%22%3A%22rcsb_entry_info.structure_determination_methodology%22%2C%22operator%22%3A%22exact_match%22%2C%22value%22%3A%22experimental%22%7D%7D%5D%2C%22logical_operator%22%3A%22and%22%7D%5D%2C%22logical_operator%22%3A%22and%22%2C%22label%22%3A%22text%22%7D%5D%2C%22logical_operator%22%3A%22and%22%7D%2C%22return_type%22%3A%22entry%22%2C%22request_options%22%3A%7B%22scoring_strategy%22%3A%22combined%22%2C%22results_content_type%22%3A%5B%22experimental%22%5D%2C%22paginate%22%3A%7B%22start%22%3A0%2C%22rows%22%3A25%7D%2C%22sort%22%3A%5B%7B%22sort_by%22%3A%22score%22%2C%22direction%22%3A%22desc%22%7D%5D%7D%2C%22request_info%22%3A%7B%22query_id%22%3A%22e0fff76e6009d1aefc3970505b66f430%22%7D%7D
                   2. select \"Create Custom Report\" instead of \"Tabular Report\", run report, then select \"Release Date\" checkbox and download CSV file
-                  3. download only the most recent file as save to /home/mchrnwsk/pda-destress-analysis/data/pdb_release_dates - last download up to 227'111
+                  3. download only the most recent file as save to /home/mchrnwsk/pda-destress-analysis/data/pdb_release_dates - last download up to 229'564
                   4. change the value above for future reference.""")
 
     # Step 6: release_dates_of_all_PDB.py
@@ -97,29 +111,47 @@ def main():
         f"nano /home/mchrnwsk/pda-destress-analysis/data/{next_date}_designed_sequences.fasta" ,
         f"Create empty file to save {next_date}_designed_sequences.fasta to"
     )
-    wait_for_user(f"""FASTA sequences:
+    wait_for_user(f"""PDB FASTA sequences:
                   1. Go to https://www.rcsb.org/downloads/fasta
                   2. Download FASTA for all PDBs by clicking the \"Download a file containing sequences in FASTA format for all entries in the PDB archive\" hyperlink under the title
                   extract and save as pdb_seqres.txt to /home/mchrnwsk/pda-destress-analysis/data/pdb_seqres.txt
+                  """)
+    wait_for_user(f"""Designed FASTA sequences:
                   3. download and save to /home/mchrnwsk/pda-destress-analysis/data/{next_date}_designed_sequences.fasta
-                  by pasting in the code list obtained by print_pdb_codes_string.py or found in /home/mchrnwsk/pda-destress-analysis/data/{next_date}_pdb_codes.txt
+    by pasting in the code list obtained by print_pdb_codes_string.py or found in /home/mchrnwsk/pda-destress-analysis/data/{next_date}_pdb_codes.txt
                   """)
 
     # Step 8: extract_designed_chains_from_fasta.py
-    run_command(
-        f"python extract_designed_chains_from_fasta.py --next {next_date}",
-        "Running extract_designed_chains_from_fasta.py"
-    )
+    if all_option:
+        run_command(
+            f"python extract_designed_chains_from_fasta.py --next {next_date}",
+            "Running extract_designed_chains_from_fasta.py"
+        )
+    else:
+        run_command(
+            f"python extract_designed_chains_from_fasta.py --next {next_date}",
+            "Running extract_designed_chains_from_fasta.py"
+        )
 
     # Step 9: Download PDB files, .pdb and .pdb1
-    run_command(
-        f"bash data/download_pdbs.sh -f /home/mchrnwsk/pda-destress-analysis/data/{next_date}_pdb_codes.txt -o /home/mchrnwsk/pda-destress-analysis/data/pdb_files -p",
-        "Downloading PDB files"
-    )
-    run_command(
-        f"bash data/download_pdbs.sh -f /home/mchrnwsk/pda-destress-analysis/data/{next_date}_pdb_codes.txt -o /home/mchrnwsk/pda-destress-analysis/data/pdb_files -a",
-        "Downloading PDB files"
-    )
+    if all_option:
+        run_command(
+            f"bash data/download_pdbs.sh -f /home/mchrnwsk/pda-destress-analysis/data/{next_date}_pdb_codes_total.txt -o /home/mchrnwsk/pda-destress-analysis/data/pdb_files -p",
+            "Downloading PDB files"
+        )
+        run_command(
+            f"bash data/download_pdbs.sh -f /home/mchrnwsk/pda-destress-analysis/data/{next_date}_pdb_codes_total.txt -o /home/mchrnwsk/pda-destress-analysis/data/pdb_files -a",
+            "Downloading PDB files"
+        )
+    else:
+        run_command(
+            f"bash data/download_pdbs.sh -f /home/mchrnwsk/pda-destress-analysis/data/{next_date}_pdb_codes_new_download.txt -o /home/mchrnwsk/pda-destress-analysis/data/pdb_files -p",
+            "Downloading PDB files"
+        )
+        run_command(
+            f"bash data/download_pdbs.sh -f /home/mchrnwsk/pda-destress-analysis/data/{next_date}_pdb_codes_new_download.txt -o /home/mchrnwsk/pda-destress-analysis/data/pdb_files -a",
+            "Downloading PDB files"
+        )
     run_command(
         "gunzip -f ./data/pdb_files/*.gz",
         "Unzipping PDB files"
@@ -137,10 +169,17 @@ def main():
 
     # Step 11: extract_designed_chains_from_pdb.py
     os.makedirs("/home/mchrnwsk/pda-destress-analysis/data/pdb_files_chains", exist_ok=True)
-    run_command(
-        f"python extract_designed_chains_from_pdb.py --next {next_date}",
-        "Running extract_designed_chains_from_pdb.py"
-    )
+
+    if all_option:
+        run_command(
+            f"python extract_designed_chains_from_pdb.py --next {next_date} --all",
+            "Running extract_designed_chains_from_pdb.py"
+        )
+    else:
+        run_command(
+            f"python extract_designed_chains_from_pdb.py --next {next_date}",
+            "Running extract_designed_chains_from_pdb.py"
+        )
 
     # Step 12: Run MMseqs2
     run_command(
@@ -176,20 +215,20 @@ def main():
                         bash foldseek_search_dvd.sh
                     OR
                         cd foldseek/{next_date}/DvP/
-                        bash foldseek_search_dvd.sh
+                        bash foldseek_search_dvp.sh
                     ctrl+b then d
                   """)
     
     # Step 15: Analyse Foldseek
     wait_for_user(f"""Run Foldseek analysis manually on cysteine
                   by running the following commands (still in tmux):
-                        python /home/mchrnwsk/pda/foldseek/{next_date}/similarity_analysis_foldeek.py -d {next_date} -a max -p DvD -m lddt -t 0.95
+                        python /home/mchrnwsk/pda/foldseek/{next_date}/similarity_analysis_foldseek.py -d {next_date} -a max -p DvD -m lddt -t 0.95
                     AND
-                        python /home/mchrnwsk/pda/foldseek/{next_date}/similarity_analysis_foldeek.py -d {next_date} -a max -p DvP -m lddt -t 0.95
+                        python /home/mchrnwsk/pda/foldseek/{next_date}/similarity_analysis_foldseek.py -d {next_date} -a max -p DvP -m lddt -t 0.95
                     AND
-                        python /home/mchrnwsk/pda/foldseek/{next_date}/similarity_analysis_foldeek.py -d {next_date} -a thr -p DvD -m lddt -t 0.95
+                        python /home/mchrnwsk/pda/foldseek/{next_date}/similarity_analysis_foldseek.py -d {next_date} -a thr -p DvD -m lddt -t 0.95
                     AND
-                        python /home/mchrnwsk/pda/foldseek/{next_date}/similarity_analysis_foldeek.py -d {next_date} -a thr -p DvP -m lddt -t 0.95
+                        python /home/mchrnwsk/pda/foldseek/{next_date}/similarity_analysis_foldseek.py -d {next_date} -a thr -p DvP -m lddt -t 0.95
                   """)
     
     # Step 16: Free up space and copy over output
@@ -233,4 +272,14 @@ def main():
           """)
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(description='Scrape PDB data')
+    parser.add_argument('--next', required=True, help='Next date (e.g., 20240930)')
+    parser.add_argument('--prev', required=True, help='Prev date (e.g., 20240827)')
+    parser.add_argument('--all', action='store_true', help='Processing for the whole dataset, not just new codes.')
+    args = parser.parse_args()
+    
+    next_date = args.next
+    prev_date = args.prev
+    all_option = args.all
+
+    main(next_date, prev_date, all_option)

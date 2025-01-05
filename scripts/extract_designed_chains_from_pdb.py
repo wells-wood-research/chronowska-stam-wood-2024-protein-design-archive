@@ -91,12 +91,12 @@ def set_chains_manually(pdb, designed_chains):
                 print("All designed chain labels: ", designed_chains)
                 print("\n")
 
-def main(next_date):
+def main(next_date, extension):
     global base_dir, chain_dir
     base_dir = "/home/mchrnwsk/pda-destress-analysis/data/pdb_files"
     chain_dir = f"{base_dir}_chains"
 
-    data = pd.read_csv(f"/home/mchrnwsk/pda-destress-analysis/data/{next_date}_pdb_codes.txt", header=None)
+    data = pd.read_csv(f"/home/mchrnwsk/pda-destress-analysis/data/{next_date}_pdb_codes_{extension}.txt", header=None, dtype=str)
     data = data.transpose().reset_index(drop=True)
     data.rename(columns={data.columns[0]: "pdb"}, inplace=True)
 
@@ -114,8 +114,8 @@ def main(next_date):
             continue
         else:
             try:
-                pdb_file_assembly = f"{base_dir}/{pdb.lower()}.pdb1"
-                pdb_file = f"{base_dir}/{pdb.lower()}.pdb"
+                pdb_file_assembly = f"{base_dir}/{pdb}.pdb1"
+                pdb_file = f"{base_dir}/{pdb}.pdb"
                 current_pdb_chain_sources = extract_designed_chains(pdb_file)
                 df = pdbUtils.pdb2df(pdb_file_assembly)
             except:
@@ -145,8 +145,15 @@ if __name__ == "__main__":
     # Parse command-line arguments
     parser = argparse.ArgumentParser(description='Extract designed chains from PDB files')
     parser.add_argument('--next', required=True, help='Next date (e.g., 20240930)')
+    parser.add_argument('--all', action='store_true', help='Scrape for the whole dataset, not just new codes.')
+
     args = parser.parse_args()
     
     next_date = args.next
+    all_option = args.all
 
-    main(next_date)
+    extension = "new_download"
+    if all_option:
+        extension = "total"
+        
+    main(next_date, extension)

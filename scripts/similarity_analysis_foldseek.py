@@ -29,7 +29,7 @@ current_dir_foldseek_analysis = current_dir_foldseek+"/"+"analysis"
 output_file = base_dir_current+"/"+prot_or_des+"_"+thr_or_max+"_related_structure"+"_"+str(metric)+"_"+str(round(threshold*100))
 
 # Load data
-data = pd.read_json(current_dir_foldseek_analysis+"/"+update_date+"_data.json")
+data = pd.read_json(current_dir_foldseek_analysis+"/"+update_date+"_scraped.json")
 pdb_release = pd.read_csv(current_dir_foldseek_analysis+"/"+"all_pdb_release_dates.csv")
 
 # Preprocess data into dictionaries for faster lookup

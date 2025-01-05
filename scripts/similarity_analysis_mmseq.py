@@ -30,7 +30,7 @@ current_dir_mmseq_analysis = base_dir_analysis+"/"+update_date+"/"+prot_or_des
 output_file = current_dir_mmseq+"/"+prot_or_des+"_"+thr_or_max+"_related_sequence"+"_"+str(metric)+"_"+str(round(threshold))
 
 # Load data
-data = pd.read_json(base_dir_data+"/"+update_date+"_data.json")
+data = pd.read_json(base_dir_data+"/"+update_date+"_data_scraped.json")
 results = pd.read_csv(current_dir_mmseq_analysis+"/"+"results.m8", sep="\t")
 pdb_release = pd.read_csv(base_dir_data+"/"+"all_pdb_release_dates.csv")
 

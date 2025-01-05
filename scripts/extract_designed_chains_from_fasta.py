@@ -5,7 +5,7 @@ from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 
 def main(next_date):
-    filename_data = f"/home/mchrnwsk/pda-destress-analysis/data/{next_date}_data.json"
+    filename_data = f"/home/mchrnwsk/pda-destress-analysis/data/{next_date}_data_scraped.json"
     filename_fasta_input = f"/home/mchrnwsk/pda-destress-analysis/data/{next_date}_designed_sequences.fasta"
     filename_fasta_output = f"/home/mchrnwsk/pda-destress-analysis/data/{next_date}_designed_chains.fasta"
 
