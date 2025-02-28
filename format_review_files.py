@@ -13,10 +13,10 @@ with open(args.filepath, 'r') as file:
 if ',' in content:
     data = pd.Series(content.split(','))  # Split by commas
 else:
-    data = pd.read_csv(args.filepath, header=None, squeeze=True)  # Read as a column
+    data = pd.read_csv(args.filepath, header=None, names=["pdb"])  # Read as a column
 
 # Convert to lowercase and remove duplicates
-data = data.str.lower().drop_duplicates()
+data = data["pdb"].str.lower().drop_duplicates()
 
 # Save to file with each entry on a new line
 data.to_csv(args.filepath, index=False, header=False)
