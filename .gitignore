@@ -1,3 +1,7 @@
+.ipynb_checkpoints/*
+Graphs/*
+MMseqs2/pdb_sequences.fasta
+__pycache__/
 Foldseek/DvD/chains/*.json
 Foldseek/DvD/struct/*.json
 Foldseek/DvP/chains/*.json
