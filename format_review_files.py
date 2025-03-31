@@ -11,12 +11,12 @@ with open(args.filepath, 'r') as file:
 
 # Determine format (comma-separated or newline-separated)
 if ',' in content:
-    data = pd.Series(content.split(','))  # Split by commas
+    data = pd.Series(content.split(','), name="pdb")  # Split by commas
 else:
-    data = pd.read_csv(args.filepath, header=None, names=["pdb"])  # Read as a column
+    data = pd.read_csv(args.filepath, header=None, names=["pdb"])["pdb"]  # Read as a column
 
 # Convert to lowercase and remove duplicates
-data = data["pdb"].str.lower().drop_duplicates()
+data = data.str.lower().drop_duplicates()
 
-# Save to file with each entry on a new line
-data.to_csv(args.filepath, index=False, header=False)
+# Save back to file in the original format
+data.to_csv(args.filepath, index=False, header=False, sep='\n')
