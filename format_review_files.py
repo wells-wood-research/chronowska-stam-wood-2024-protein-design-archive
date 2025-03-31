@@ -16,7 +16,7 @@ else:
     data = pd.read_csv(args.filepath, header=None, names=["pdb"])["pdb"]  # Read as a column
 
 # Convert to lowercase and remove duplicates
-data = data.str.lower().drop_duplicates()
+data = data.str.lower().drop_duplicates().sort_values()
 
 # Save back to file in the original format
 data.to_csv(args.filepath, index=False, header=False, sep='\n')
