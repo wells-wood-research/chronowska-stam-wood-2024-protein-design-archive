@@ -37,7 +37,7 @@ def get_pdb_codes(file_path, uppercase_print):
         raise ValueError("Unsupported file type")
 
 def output_codes(result_codes, output_file):
-    output_string = ", ".join(result_codes)
+    output_string = ",".join(result_codes)
     if output_file:
         with open(output_file, 'w') as file:
             file.write(output_string)
@@ -51,6 +51,8 @@ def main(file_to_print, file_to_exclude, uppercase_print, output_file):
     if file_to_exclude:
         codes_to_exclude = set(get_pdb_codes(file_to_exclude, uppercase_print))
         result_codes = {code.upper() for code in codes_to_print} - {code.upper() for code in codes_to_exclude}
+        common_codes = {code.upper() for code in codes_to_print} & {code.upper() for code in codes_to_exclude}
+        print("In common (e.g. newly excluded or previously manually added): ", common_codes)
     else:
         result_codes = codes_to_print
 
