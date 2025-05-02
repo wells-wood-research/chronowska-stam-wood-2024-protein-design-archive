@@ -29,7 +29,7 @@ current_dir_foldseek_analysis = current_dir_foldseek+"/"+"analysis"
 output_file = base_dir_current+"/"+prot_or_des+"_"+thr_or_max+"_related_structure"+"_"+str(metric)+"_"+str(round(threshold*100))
 
 # Load data
-data = pd.read_json(current_dir_foldseek_analysis+"/"+update_date+"_scraped.json")
+data = pd.read_json(current_dir_foldseek_analysis+"/"+update_date+"_data_scraped.json")
 pdb_release = pd.read_csv(current_dir_foldseek_analysis+"/"+"all_pdb_release_dates.csv")
 
 # Preprocess data into dictionaries for faster lookup
@@ -49,13 +49,9 @@ for chunk in pd.read_csv(current_dir_foldseek+"/"+"output/resultDB", sep="\t", h
         if i % 1000 == 0:
             print(f"{prot_or_des}: {i}/{len(results)}")
         
-        query_name = row["query"][:4].lower()
-        target_name = row["target"][:4].lower()
+        query_name = row["query"][:4].lower() # designed protein
+        target_name = row["target"][:4].lower() # designed or natural protein
         
-        if query_name == target_name:
-            continue
-        if query_name not in excluded_pdbs: # To deal with similarity mistakenly calculated for entries that are not in the dataset, only because they were in the pdb files
-            continue
         if prot_or_des != "DvD":
             if target_name in excluded_pdbs:
                 continue
@@ -72,6 +68,9 @@ for chunk in pd.read_csv(current_dir_foldseek+"/"+"output/resultDB", sep="\t", h
                 continue
         
         similarity = row[metric]
+
+        if query_name == target_name:
+            similarity = 0.0 # self-comparison
         
         if thr_or_max == "thr":
             if similarity >= threshold:

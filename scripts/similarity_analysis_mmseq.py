@@ -52,9 +52,6 @@ for chunk in pd.read_csv(current_dir_mmseq_analysis+"/"+"results.m8", sep="\t", 
         
         query_name = row["query"][:4].lower()
         target_name = row["target"][:4].lower()
-        
-        if query_name == target_name:
-            continue
 
         if prot_or_des != "DvD":
             if target_name in excluded_pdbs:
@@ -72,6 +69,9 @@ for chunk in pd.read_csv(current_dir_mmseq_analysis+"/"+"results.m8", sep="\t", 
                 continue
         
         similarity = row[metric]
+
+        if query_name == target_name:
+            similarity = 0.0 # self-comparison
         
         if thr_or_max == "thr":
             if similarity >= threshold:
