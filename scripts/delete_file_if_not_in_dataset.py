@@ -12,7 +12,7 @@ def main(next_date, to_delete_path):
     for filename in os.listdir(to_delete_path):
         filepath = os.path.join(to_delete_path, filename)
         if os.path.isfile(filepath):
-            name_without_extension = os.path.splitext(filename)[0]
+            name_without_extension = filename.split(".")[0]
             name_without_chain_label = name_without_extension.split("_")[0]
             if name_without_chain_label.lower() not in data["pdb"].values:
                 os.remove(filepath)
