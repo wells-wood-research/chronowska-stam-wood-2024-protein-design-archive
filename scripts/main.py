@@ -27,7 +27,8 @@ def wait_for_user(prompt):
 def main(next_date, prev_date, all_option=False):
     # Step 1: Review designs. Create file in official github repo for tracking home/mchrnwsk/chronowska-stam-wood-2024-protein-design-archive/data/{next_date}_pdb_codes.csv with new entries.
     wait_for_user(f"Add reviewed designs to add in the {next_date} update to /home/mchrnwsk/chronowska-stam-wood-2024-protein-design-archive/data/{next_date}_pdb_codes.csv")
-    
+    wait_for_user(f"Add codes to exclude in the {next_date} update to //home/mchrnwsk/chronowska-stam-wood-2024-protein-design-archive/entries_to_manually_exclude.csv")
+
     # Step 2: Create /home/mchrnwsk/pda-destress-analysis/data/{next_date}_pdb_codes.txt with entries not found in exclude, and found in manually include
     if all_option:
         run_command(
@@ -132,7 +133,7 @@ def main(next_date, prev_date, all_option=False):
                   1. Download custom report from the following URL:
                   https://www.rcsb.org/search?request=%7B%22query%22%3A%7B%22type%22%3A%22group%22%2C%22nodes%22%3A%5B%7B%22type%22%3A%22group%22%2C%22nodes%22%3A%5B%7B%22type%22%3A%22group%22%2C%22nodes%22%3A%5B%7B%22type%22%3A%22terminal%22%2C%22service%22%3A%22text%22%2C%22parameters%22%3A%7B%22attribute%22%3A%22rcsb_entry_info.structure_determination_methodology%22%2C%22operator%22%3A%22exact_match%22%2C%22value%22%3A%22experimental%22%7D%7D%5D%2C%22logical_operator%22%3A%22and%22%7D%5D%2C%22logical_operator%22%3A%22and%22%2C%22label%22%3A%22text%22%7D%5D%2C%22logical_operator%22%3A%22and%22%7D%2C%22return_type%22%3A%22entry%22%2C%22request_options%22%3A%7B%22scoring_strategy%22%3A%22combined%22%2C%22results_content_type%22%3A%5B%22experimental%22%5D%2C%22paginate%22%3A%7B%22start%22%3A0%2C%22rows%22%3A25%7D%2C%22sort%22%3A%5B%7B%22sort_by%22%3A%22score%22%2C%22direction%22%3A%22desc%22%7D%5D%7D%2C%22request_info%22%3A%7B%22query_id%22%3A%22e0fff76e6009d1aefc3970505b66f430%22%7D%7D
                   2. select \"Create Custom Report\" instead of \"Tabular Report\", run report, then select \"Release Date\" checkbox and download CSV file
-                  3. download only the most recent file as save to /home/mchrnwsk/pda-destress-analysis/data/pdb_release_dates - last download up to 235'458
+                  3. download only the most recent file as save to /home/mchrnwsk/pda-destress-analysis/data/pdb_release_dates - last download up to 236'620
                   4. change the value above for future reference.""")
 
     # Step 8: release_dates_of_all_PDB.py
