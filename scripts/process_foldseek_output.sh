@@ -13,7 +13,6 @@ ssh -Nf mchrnwsk@glycine.bio.ed.ac.uk
 for type in "${analysis_type[@]}"; do
 
     # Remove large unnecessary files
-    #ssh mchrnwsk@glycine.bio.ed.ac.uk "rm -r /home/mchrnwsk/pda/foldseek/$next_date/$type/pdb_files_chains/"
     ssh mchrnwsk@glycine.bio.ed.ac.uk "rm -r /home/mchrnwsk/pda/foldseek/$next_date/$type/output"
     ssh mchrnwsk@glycine.bio.ed.ac.uk "rm -r /home/mchrnwsk/pda/foldseek/$next_date/$type/data"
 
