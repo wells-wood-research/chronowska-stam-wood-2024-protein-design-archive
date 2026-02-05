@@ -1,3 +1,4 @@
+import glob
 import re
 import pandas as pd
 from pdbUtils import pdbUtils
@@ -83,6 +84,8 @@ def set_chains_manually(pdb, designed_chains):
         
         try:
             designed_chains_only_df = df[df["CHAIN_ID"] == chain_label]
+            if len(designed_chains_only_df) == 0:
+                continue
             pdbUtils.df2pdb(designed_chains_only_df, outfile)
         except Exception as e:
             if not set(designed_chains).intersection(df["CHAIN_ID"].unique().tolist()):
@@ -91,12 +94,14 @@ def set_chains_manually(pdb, designed_chains):
                 print("All designed chain labels: ", designed_chains)
                 print("\n")
 
-def main(next_date, extension):
+def main(next_date):
     global base_dir, chain_dir
-    base_dir = "/home/mchrnwsk/pda-destress-analysis/data/pdb_files"
+    base_dir = f"/home/mchrnwsk/pda/foldseek/{next_date}/pdb_files"
     chain_dir = f"{base_dir}_chains"
 
-    data = pd.read_csv(f"/home/mchrnwsk/pda-destress-analysis/data/{next_date}_pdb_codes_{extension}.txt", header=None, dtype=str)
+    filepath = f"/home/mchrnwsk/pda/foldseek/{next_date}/pdb_codes.txt"
+    df = pd.read_csv(filepath, header=None, dtype=str)
+
     data = data.transpose().reset_index(drop=True)
     data.rename(columns={data.columns[0]: "pdb"}, inplace=True)
 
@@ -145,15 +150,9 @@ if __name__ == "__main__":
     # Parse command-line arguments
     parser = argparse.ArgumentParser(description='Extract designed chains from PDB files')
     parser.add_argument('--next', required=True, help='Next date (e.g., 20240930)')
-    parser.add_argument('--all', action='store_true', help='Scrape for the whole dataset, not just new codes.')
 
     args = parser.parse_args()
     
     next_date = args.next
-    all_option = args.all
 
-    extension = "new_download"
-    if all_option:
-        extension = "total"
-        
-    main(next_date, extension)
+    main(next_date)

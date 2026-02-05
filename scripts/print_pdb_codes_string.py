@@ -19,7 +19,6 @@ def get_pdb_codes_from_csv(file_path, uppercase_print):
 
 def get_pdb_codes_from_txt(file_path, uppercase_print):
     with open(file_path, 'r') as file:
-        # Read the file, split by commas, and strip any whitespace from each entry
         codes = [code.strip() for code in file.read().split(',')]
     if uppercase_print:
         return [code.upper() for code in codes]
@@ -36,8 +35,20 @@ def get_pdb_codes(file_path, uppercase_print):
     else:
         raise ValueError("Unsupported file type")
 
-def output_codes(result_codes, output_file):
-    output_string = ",".join(result_codes)
+def format_codes(codes, newline_every):
+    codes = list(codes)
+    if not newline_every or newline_every <= 0:
+        return ",".join(codes)
+
+    lines = [
+        ",".join(codes[i:i + newline_every])
+        for i in range(0, len(codes), newline_every)
+    ]
+    return "\n\n".join(lines)
+
+def output_codes(result_codes, output_file, newline_every):
+    output_string = format_codes(result_codes, newline_every)
+
     if output_file:
         with open(output_file, 'w') as file:
             file.write(output_string)
@@ -45,7 +56,7 @@ def output_codes(result_codes, output_file):
         print(output_string)
         print("Number of new codes:", len(result_codes))
 
-def main(file_to_print, file_to_exclude, uppercase_print, output_file):
+def main(file_to_print, file_to_exclude, uppercase_print, output_file, newline_every):
     codes_to_print = set(get_pdb_codes(file_to_print, uppercase_print))
 
     if file_to_exclude:
@@ -56,20 +67,29 @@ def main(file_to_print, file_to_exclude, uppercase_print, output_file):
     else:
         result_codes = codes_to_print
 
-    output_codes(result_codes, output_file)
+    output_codes(result_codes, output_file, newline_every)
 
 if __name__ == "__main__":
-    # Parse command-line arguments
-    parser = argparse.ArgumentParser(description='Print PDB codes as "code, code, code" etc.; Example usage: python print_pdb_codes_string.py --file path_to_print --exclude path_to_exclude --uppercase True')
-    parser.add_argument('--file', required=True, help='File from which to print PDB codes, can be .CSV, .JSON, or .TXT')
-    parser.add_argument('--exclude', default=None, help='If PDB code found in this file, don\'t print; can be .CSV, .JSON, or .TXT')
-    parser.add_argument('--uppercase', action='store_true', help='Whether to print codes in uppercase')
-    parser.add_argument('--output', default=None, help='File to save the output; prints to command line if not specified')
+    parser = argparse.ArgumentParser(
+        description='Print PDB codes as "code, code, code"; optionally insert newlines.'
+    )
+    parser.add_argument('--file', required=True, help='File from which to print PDB codes')
+    parser.add_argument('--exclude', default=None, help='File of PDB codes to exclude')
+    parser.add_argument('--uppercase', action='store_true', help='Print codes in uppercase')
+    parser.add_argument('--output', default=None, help='File to save the output')
+    parser.add_argument(
+        '--newline-every', '-n',
+        type=int,
+        default=None,
+        help='Insert a newline after every N codes'
+    )
+
     args = parser.parse_args()
-    
-    file_to_print = args.file
-    file_to_exclude = args.exclude
-    uppercase_print = args.uppercase   
-    output_file = args.output
-    
-    main(file_to_print, file_to_exclude, uppercase_print, output_file)
+
+    main(
+        file_to_print=args.file,
+        file_to_exclude=args.exclude,
+        uppercase_print=args.uppercase,
+        output_file=args.output,
+        newline_every=args.newline_every
+    )
