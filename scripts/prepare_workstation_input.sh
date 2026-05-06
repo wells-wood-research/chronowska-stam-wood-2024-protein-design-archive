@@ -21,9 +21,9 @@ fi
 
 # Determine which file to copy based on the flag
 if [ "$all_mode" = true ]; then
-    EXTENSION="_pdb_codes_total.txt"
+    EXTENSION="pdb_codes_total.txt"
 else
-    EXTENSION="_pdb_codes_new_download.txt"
+    EXTENSION="pdb_codes_new_download.txt"
 fi
 
 # Define the types of analysis
@@ -60,13 +60,13 @@ for type in "${analysis_type[@]}"; do
             /home/mchrnwsk/pda/foldseek/$next_date/ &&
         cp /home/mchrnwsk/pda/foldseek/$next_date/tmp/extract_designed_chains_from_pdb.py \
             /home/mchrnwsk/pda/foldseek/$next_date/extract_designed_chains_from_pdb.py &&
-        cp /home/mchrnwsk/pda/foldseek/$next_date/tmp/"$next_date""$EXTENSION" /home/mchrnwsk/pda/foldseek/$next_date/pdb_codes.txt &&
+        cp /home/mchrnwsk/pda/foldseek/$next_date/tmp/"$next_date"_"$EXTENSION" /home/mchrnwsk/pda/foldseek/$next_date/pdb_codes.txt &&
         mkdir -p /home/mchrnwsk/pda/foldseek/$next_date/$type/{analysis,data,output} &&
         cp /home/mchrnwsk/pda/foldseek/$next_date/tmp/${next_date}_data_scraped.json \
            /home/mchrnwsk/pda/foldseek/$next_date/tmp/all_pdb_release_dates.csv \
            /home/mchrnwsk/pda/foldseek/$next_date/$type/analysis/ &&
         cp /home/mchrnwsk/pda/foldseek/$next_date/tmp/similarity_analysis_foldseek.py \
-            cp /home/mchrnwsk/pda/foldseek/$next_date/tmp/${next_date}_data_scraped.json \
+           /home/mchrnwsk/pda/foldseek/$next_date/tmp/${next_date}_data_scraped.json \
            /home/mchrnwsk/pda/foldseek/$next_date/ &&
         cp /home/mchrnwsk/pda/foldseek/$next_date/tmp/foldseek_search_${type,,}.sh \
            /home/mchrnwsk/pda/foldseek/$next_date/$type/

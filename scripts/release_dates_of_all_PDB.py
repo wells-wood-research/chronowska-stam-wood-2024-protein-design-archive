@@ -1,33 +1,186 @@
+#!/usr/bin/env python3
+
+import argparse
+import requests
 import pandas as pd
-import glob
 import os
+from datetime import datetime
 
-# Download by going to:
-# 1. https://www.rcsb.org/search?request=%7B%22query%22%3A%7B%22type%22%3A%22group%22%2C%22nodes%22%3A%5B%7B%22type%22%3A%22group%22%2C%22nodes%22%3A%5B%7B%22type%22%3A%22group%22%2C%22nodes%22%3A%5B%7B%22type%22%3A%22terminal%22%2C%22service%22%3A%22text%22%2C%22parameters%22%3A%7B%22attribute%22%3A%22rcsb_entry_info.structure_determination_methodology%22%2C%22operator%22%3A%22exact_match%22%2C%22value%22%3A%22experimental%22%7D%7D%5D%2C%22logical_operator%22%3A%22and%22%7D%5D%2C%22logical_operator%22%3A%22and%22%2C%22label%22%3A%22text%22%7D%5D%2C%22logical_operator%22%3A%22and%22%7D%2C%22return_type%22%3A%22entry%22%2C%22request_options%22%3A%7B%22scoring_strategy%22%3A%22combined%22%2C%22results_content_type%22%3A%5B%22experimental%22%5D%2C%22paginate%22%3A%7B%22start%22%3A0%2C%22rows%22%3A25%7D%2C%22sort%22%3A%5B%7B%22sort_by%22%3A%22score%22%2C%22direction%22%3A%22desc%22%7D%5D%7D%2C%22request_info%22%3A%7B%22query_id%22%3A%22e0fff76e6009d1aefc3970505b66f430%22%7D%7D
-# 2. selecting "Create Custom Report" instead of "Tabular Report"
-# 3. download only the most recent file - last download up to 225'681
+SEARCH_URL = "https://search.rcsb.org/rcsbsearch/v2/query"
+GRAPHQL_URL = "https://data.rcsb.org/graphql"
 
-# Specify the directory containing the CSV files
-directory = "/home/mchrnwsk/pda-destress-analysis/data/pdb_release_dates"
-# Use glob to get all the CSV file paths
-all_files = glob.glob(os.path.join(directory, "*.csv"))
+OUTPUT_CSV = "/home/mchrnwsk/pda-destress-analysis/data/all_pdb_release_dates.csv"
 
-# Create an empty list to hold the DataFrames
-dfs = []
 
-# Loop over the file paths and read each file
-for file in all_files:
-    df = pd.read_csv(file, header=1)  # read the CSV file
-    dfs.append(df)          # append the DataFrame to the list
+def format_date(date_str):
+    """Convert YYYYMMDD -> YYYY-MM-DD"""
+    return datetime.strptime(date_str, "%Y%m%d").strftime("%Y-%m-%d")
 
-# Concatenate all the DataFrames into one
-combined_df = pd.concat(dfs, ignore_index=True)
 
-# Make IDs lowercase
-combined_df["Entry ID"] = combined_df["Entry ID"].str.lower()
+def get_entry_ids(prev_date, next_date):
+    """Fetch PDB IDs released between dates"""
+    print(f"[INFO] Fetching PDB IDs between {prev_date} and {next_date}...")
 
-# Remove duplicates based on "Entry ID"
-combined_df = combined_df.drop_duplicates(subset="Entry ID", keep='first')
+    query = {
+        "query": {
+            "type": "group",
+            "logical_operator": "and",
+            "nodes": [
+                {
+                    "type": "terminal",
+                    "service": "text",
+                    "parameters": {
+                        "attribute": "rcsb_entry_info.structure_determination_methodology",
+                        "operator": "exact_match",
+                        "value": "experimental"
+                    }
+                },
+                {
+                    "type": "terminal",
+                    "service": "text",
+                    "parameters": {
+                        "attribute": "rcsb_accession_info.initial_release_date",
+                        "operator": "greater",
+                        "value": prev_date
+                    }
+                },
+                {
+                    "type": "terminal",
+                    "service": "text",
+                    "parameters": {
+                        "attribute": "rcsb_accession_info.initial_release_date",
+                        "operator": "less_or_equal",
+                        "value": next_date
+                    }
+                }
+            ]
+        },
+        "return_type": "entry",
+        "request_options": {
+            "return_all_hits": True
+        }
+    }
 
-combined_df.to_csv("/home/mchrnwsk/pda-destress-analysis/data/all_pdb_release_dates.csv", sep=",", index=False)
-print("Output saved to /home/mchrnwsk/pda-destress-analysis/data/all_pdb_release_dates.csv")
+    res = requests.post(SEARCH_URL, json=query)
+    res.raise_for_status()
+    data = res.json()
+
+    ids = [r["identifier"] for r in data.get("result_set", [])]
+
+    print(f"[INFO] Found {len(ids)} new entries")
+    return ids
+
+
+def chunked(lst, size=1000):
+    for i in range(0, len(lst), size):
+        yield lst[i:i + size]
+
+
+def fetch_release_dates(entry_ids):
+    """Fetch release dates via GraphQL"""
+    query = """
+    query ($ids: [String!]!) {
+      entries(entry_ids: $ids) {
+        rcsb_id
+        rcsb_accession_info {
+          initial_release_date
+        }
+      }
+    }
+    """
+
+    res = requests.post(GRAPHQL_URL, json={
+        "query": query,
+        "variables": {"ids": entry_ids}
+    })
+    res.raise_for_status()
+
+    return res.json()["data"]["entries"]
+
+
+def get_release_dates(entry_ids):
+    """Batch fetch with progress output"""
+    results = []
+
+    for i, chunk in enumerate(chunked(entry_ids, 1000), start=1):
+        print(f"[INFO] Fetching chunk {i} ({len(chunk)} IDs)...")
+        results.extend(fetch_release_dates(chunk))
+
+    print(f"[INFO] Retrieved {len(results)} release dates")
+    return results
+
+
+def load_existing_csv():
+    """Load existing CSV or create empty DataFrame"""
+    if os.path.exists(OUTPUT_CSV):
+        print("[INFO] Loading existing CSV...")
+        df = pd.read_csv(OUTPUT_CSV)
+    else:
+        print("[INFO] No existing CSV found, creating new one...")
+        df = pd.DataFrame(columns=["Entry ID", "Release Date"])
+
+    return df
+
+
+def prepare_new_data(results):
+    """Convert API results to DataFrame"""
+    rows = []
+
+    for entry in results:
+        if entry is None:
+            continue
+
+        pdb_id = entry["rcsb_id"].lower()
+        date = entry["rcsb_accession_info"]["initial_release_date"]
+
+        # Convert ISO → YYYY-MM-DD
+        date = date.split("T")[0]
+
+        rows.append({
+            "Entry ID": pdb_id,
+            "Release Date": date
+        })
+
+    return pd.DataFrame(rows)
+
+
+def update_csv(new_df):
+    """Append + deduplicate"""
+    existing_df = load_existing_csv()
+
+    combined = pd.concat([existing_df, new_df], ignore_index=True)
+
+    before = len(combined)
+    combined = combined.drop_duplicates(subset="Entry ID", keep="last")
+    after = len(combined)
+
+    combined.to_csv(OUTPUT_CSV, index=False)
+
+    print(f"[INFO] CSV updated: {after} total entries ({before - after} duplicates removed)")
+    print(f"[INFO] Saved to {OUTPUT_CSV}")
+
+
+def main(prev, next_):
+    prev_fmt = format_date(prev)
+    next_fmt = format_date(next_)
+
+    entry_ids = get_entry_ids(prev_fmt, next_fmt)
+
+    if not entry_ids:
+        print("[INFO] No new entries found. Nothing to update.")
+        return
+
+    results = get_release_dates(entry_ids)
+    new_df = prepare_new_data(results)
+
+    update_csv(new_df)
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Update PDB release dates")
+    parser.add_argument("--prev", required=True, help="Previous date (YYYYMMDD)")
+    parser.add_argument("--next", required=True, help="Next date (YYYYMMDD)")
+
+    args = parser.parse_args()
+
+    main(args.prev, args.next)

@@ -55,7 +55,7 @@ def main(next_date):
     data["struct_max_sim_designed"] = data["pdb"].apply(lambda x: get_similarity_data(x, struct_max_sim_designed))
     data["struct_max_sim_natural"] = data["pdb"].apply(lambda x: get_similarity_data(x, struct_max_sim_natural))
 
-    data_result = data.to_json(f"{base_dir_data}/{next_date}_data_similarity.json", orient="records", indent=4)
+    data.to_json(f"{base_dir_data}/{next_date}_data_similarity.json", orient="records", indent=4)
 
 if __name__ == "__main__":
    # Parse command-line arguments

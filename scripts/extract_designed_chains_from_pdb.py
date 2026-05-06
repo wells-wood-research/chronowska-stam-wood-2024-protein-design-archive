@@ -75,7 +75,7 @@ def extract_designed_chains(pdb_file):
     return species
 
 def set_chains_manually(pdb, designed_chains):
-    pdb_file_assembly = base_dir+"/"+pdb.lower() + ".pdb1"
+    pdb_file_assembly = f"{base_dir}/{pdb}.pdb1"
     df = pdbUtils.pdb2df(pdb_file_assembly)
     designed_chains_only_df = pd.DataFrame(columns = df.columns)
     
@@ -100,13 +100,10 @@ def main(next_date):
     chain_dir = f"{base_dir}_chains"
 
     filepath = f"/home/mchrnwsk/pda/foldseek/{next_date}/pdb_codes.txt"
-    df = pd.read_csv(filepath, header=None, dtype=str)
+    with open(filepath, "r") as f:
+        pdb_list = [x.strip() for x in f.read().split(",") if x.strip()]
 
-    data = data.transpose().reset_index(drop=True)
-    data.rename(columns={data.columns[0]: "pdb"}, inplace=True)
-
-    for i, row in data.iterrows():
-        pdb = row["pdb"].strip()
+    for pdb in pdb_list:
 
         if pdb == "1mey":
             set_chains_manually(pdb, ["C", "F", "G"])

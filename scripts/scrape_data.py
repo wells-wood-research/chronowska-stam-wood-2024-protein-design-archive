@@ -589,10 +589,15 @@ def main(next_date, prev_date, all_option):
     print(f"Data saved to {base_dir_data}/{next_date}_data.json")
 
 if __name__ == "__main__":
-   # Parse command-line arguments
-    next_date = "future"
-    prev_date = "past"
-    all_option = True
+    parser = argparse.ArgumentParser(description='Scrape PDB data')
+    parser.add_argument('--next', required=True, help='Next date (e.g., 20240930)')
+    parser.add_argument('--prev', required=True, help='Prev date (e.g., 20240827)')
+    parser.add_argument('--all', action='store_true', help='Processing for the whole dataset, not just new codes.')
+    args = parser.parse_args()
+    
+    next_date = args.next
+    prev_date = args.prev
+    all_option = args.all
 
 
     print("Logging in /home/mchrnwsk/pda-destress-analysis/scraping_log.txt")

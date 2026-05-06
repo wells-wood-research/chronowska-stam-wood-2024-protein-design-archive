@@ -33,7 +33,7 @@ if __name__ == "__main__":
    # Parse command-line arguments
     parser = argparse.ArgumentParser(description='Remove entries labelled for extraction')
     parser.add_argument('--next', required=True, help='Next date (e.g., 20240930)')
-    parser.add_argument("-i", "--input", default="similarity", type=str, required=True, help="Label of data input (just \"similarity\" for \"20240930_data_similarity.json\")")
+    parser.add_argument("-i", "--input", default="destress", type=str, required=True, help="Label of data input (just \"similarity\" for \"20240930_data_similarity.json\")")
     parser.add_argument("-o", "--output", default="reordered", type=str, required=True, help="Label of data output (just \"reordered\" for \"20240930_data_reordered.json\")")
     args = parser.parse_args()
     
