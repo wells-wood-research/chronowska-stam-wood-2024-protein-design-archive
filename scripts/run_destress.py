@@ -6,7 +6,7 @@ import argparse
 
 BASE = "/home/mchrnwsk/pda-destress-analysis/data"
 
-MASTER_CSV = f"{BASE}/destress_metrics.csv"
+MASTER_CSV = f"{BASE}/destress_metrics_backup.csv"
 PDB_DIR = f"{BASE}/pdb_files"
 NEW_PDB_DIR = f"{BASE}/new_update_pdb"
 

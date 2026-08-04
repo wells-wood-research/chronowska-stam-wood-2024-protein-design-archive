@@ -81,7 +81,6 @@ def main(next_date):
     print("")
     print(f"Check {current_dir_mmseqs2} for prepared analysis directory.")
     print("")
-    print(f"Run command\nsudo bash {dvd_current_dir_mmseqs2}/search_dvd.sh\nor\nsudo bash {dvp_current_dir_mmseqs2}/search_dvp.sh\nfor analysis.")
 
 if __name__ == "__main__":
     # Parse command-line arguments
