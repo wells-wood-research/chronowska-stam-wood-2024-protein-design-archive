@@ -187,8 +187,8 @@ def get_chains(pdb, cif_dict):
     try:
         chains = []
         elements = cif_dict["_entity_poly.entity_id"]
-        seq_unnat = cif_dict["_entity_poly.pdbx_seq_one_letter_code"]
-        seq_nat = cif_dict["_entity_poly.pdbx_seq_one_letter_code_can"]
+        seq_unnat = cif_dict["_entity_poly.pdbx_seq_one_letter_code"].replace("\n", "")
+        seq_nat = cif_dict["_entity_poly.pdbx_seq_one_letter_code_can"].replace("\n", "")
         seq_id = cif_dict["_entity_poly.pdbx_strand_id"]
         
         for i in range(len(elements)):
@@ -219,12 +219,12 @@ def get_chains(pdb, cif_dict):
                     if "?" in chain_source.lower():
                         chain_source = "unknown"
                         chain_type = "U"
-                    elif "synthetic" in chain_source.lower() or "artificial" in chain_source.lower():
+                    elif "synthetic" in chain_source.lower() or "artificial" in chain_source.lower() or "design" in chain_source.lower():
                         chain_type = "D"
                     else:
                         chain_type = "N"
                         
-                chain_length = len(seq_nat[i])
+                chain_length = len(chain_seq_nat)
                 chains.append({"chain_id": chain_id, "chain_source": chain_source, "chain_type": chain_type, "chain_seq_unnat": chain_seq_unnat, "chain_seq_nat": chain_seq_nat, "chain_length": chain_length})
             except IndexError:
                 continue
