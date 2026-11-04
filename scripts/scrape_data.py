@@ -187,8 +187,8 @@ def get_chains(pdb, cif_dict):
     try:
         chains = []
         elements = cif_dict["_entity_poly.entity_id"]
-        seq_unnat = cif_dict["_entity_poly.pdbx_seq_one_letter_code"].replace("\n", "")
-        seq_nat = cif_dict["_entity_poly.pdbx_seq_one_letter_code_can"].replace("\n", "")
+        seq_unnat = cif_dict["_entity_poly.pdbx_seq_one_letter_code"][0].replace("\n", "")
+        seq_nat = cif_dict["_entity_poly.pdbx_seq_one_letter_code_can"][0].replace("\n", "")
         seq_id = cif_dict["_entity_poly.pdbx_strand_id"]
         
         for i in range(len(elements)):
